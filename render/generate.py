@@ -1,5 +1,6 @@
 import blenderproc as bproc  # must be the very first line (BlenderProc checks this)
-# Render N randomized metal nuts (no defects yet), top-down, RGB + segmentation mask.
+# Render N randomized metal nuts with synthetic scratches, top-down,
+# RGB + segmentation mask (0 = background, 1 = nut, 2 = scratch).
 #
 # Base scene values come from reports/real_observations.md; random ranges are
 # listed in sample_params(). Every image's parameters go to meta.jsonl.
@@ -22,9 +23,9 @@ parser.add_argument("--n", type=int, default=200, help="number of images")
 parser.add_argument("--seed", type=int, default=0, help="master seed")
 parser.add_argument("--out", default="data/synth/week1", help="output folder")
 parser.add_argument("--no-random", action="store_true", help="render base values only")
+parser.add_argument("--version", default="synth_v1", help="dataset_version label in meta")
 args = parser.parse_args()
 
-DATASET_VERSION = "week1_good"
 IMG_SIZE = 512
 SAMPLES = 64  # low + denoiser: ~8 s/image
 
@@ -63,9 +64,22 @@ KEY_ANGLE = 150                    # deg, ~10 o'clock in the image [measured]
 KEY_ELEVATION = 30                 # deg
 KEY_ENERGY = 15.0                  # weak directional light (W)
 
+# --- scratches (reports/real_observations.md, 10 seen_pool images) -----------
+# Each scratch = a rotated rectangle on the nut surface. Inside it the surface is
+# darker and more matte; "field" scratches also get fine parallel lines.
+# The same rectangle is projected into the image to build the mask (category 2).
+MAX_SCRATCHES = 3
+P_NO_DEFECT = 0.35                 # roadmap: 30-40% defect-free images
+P_N_SCRATCHES = [0.7, 0.2, 0.1]    # 1, 2 or 3 scratches; real: usually 1, sometimes 2-3
+P_FIELD = 0.7                      # real: 7 of 10 are hairline fields, 3 gouge bands
+FIELD_LENGTH, FIELD_WIDTH = (0.15, 0.8), (0.08, 0.35)   # in D (tab-tip diameter)
+BAND_LENGTH, BAND_WIDTH = (0.5, 1.0), (0.05, 0.1)
+SCRATCH_CENTER_R = (0.15, 0.45)    # center lies on the nut, anywhere from hole to tabs
+LINE_STRETCH = (4, 500)            # noise scale along/across a field -> long thin lines
+
 # --- camera -------------------------------------------------------------------
 CAM_HEIGHT = 10.0       # far away -> almost orthographic
-FILL = 0.89             # nut width / image width [measured]
+FILL = 0.882            # 0.89 gave 89.9% width vs real 89.1% (Week 1 check) -> scaled
 
 
 def sample_params(rng, randomize):
@@ -89,6 +103,9 @@ def sample_params(rng, randomize):
         "tint": [1.0, 1.0, 1.0],
         "bg_shift": 0,
         "texture_offset": [0.0, 0.0, 0.0],
+        "scratch_darken": 0.65,        # scratch color = darken * surface color
+        "scratch_roughness": 0.7,      # matte inside scratches
+        "defects": [],
     }
     if not randomize:
         return p
@@ -112,8 +129,34 @@ def sample_params(rng, randomize):
         "bg_shift": int(rng.integers(-3, 4)),
         # move the noise patterns, otherwise every nut has the exact same pits
         "texture_offset": rng.uniform(-100, 100, 3).round(3).tolist(),
+        "scratch_darken": rng.uniform(0.35, 0.7),
+        "scratch_roughness": rng.uniform(0.55, 0.85),
+        "defects": sample_scratches(rng),
     })
     return {k: round(v, 4) if isinstance(v, float) else v for k, v in p.items()}
+
+
+def sample_scratches(rng):
+    """0-3 scratches as rotated rectangles in nut-local coordinates (units of D)."""
+    if rng.random() < P_NO_DEFECT:
+        return []
+    scratches = []
+    for _ in range(rng.choice([1, 2, 3], p=P_N_SCRATCHES)):
+        kind = "field" if rng.random() < P_FIELD else "band"
+        length = rng.uniform(*(FIELD_LENGTH if kind == "field" else BAND_LENGTH))
+        width = rng.uniform(*(FIELD_WIDTH if kind == "field" else BAND_WIDTH))
+        width = min(width, 0.7 * length)  # keep it an elongated strip, not a square
+        r = rng.uniform(*SCRATCH_CENTER_R)
+        a = rng.uniform(0, 2 * math.pi)
+        scratches.append({
+            "type": kind,
+            "cx": round(r * math.cos(a), 4), "cy": round(r * math.sin(a), 4),
+            "angle_deg": round(rng.uniform(0, 180), 2),
+            "length": round(length, 4), "width": round(width, 4),
+            # fields: how many lines (higher threshold = fewer lines)
+            "line_threshold": round(rng.uniform(0.45, 0.6), 3),
+        })
+    return scratches
 
 
 def srgb_to_linear(c):
@@ -212,10 +255,10 @@ def make_metal_material(name, roughness_range, grain, rings):
         links.new(mapping.outputs["Vector"], n.inputs["Vector"])
         return n
 
-    def math_node(op, a, b):
+    def math_node(op, *values):
         m = nodes.new("ShaderNodeMath")
         m.operation = op
-        for socket, value in zip(m.inputs, (a, b)):
+        for socket, value in zip(m.inputs, values):
             if isinstance(value, float):
                 socket.default_value = value
             else:
@@ -261,7 +304,6 @@ def make_metal_material(name, roughness_range, grain, rings):
     rough.inputs["To Min"].default_value = roughness_range[0]
     rough.inputs["To Max"].default_value = roughness_range[1]
     links.new(patches.outputs["Fac"], rough.inputs["Value"])
-    links.new(rough.outputs["Result"], bsdf.inputs["Roughness"])
     handles["rough"] = rough
 
     # speckles: where noise > threshold, darken the base color
@@ -270,9 +312,61 @@ def make_metal_material(name, roughness_range, grain, rings):
     links.new(speckle.outputs["Fac"], ramp.inputs["Fac"])
     mix = nodes.new("ShaderNodeMixRGB")
     links.new(ramp.outputs["Color"], mix.inputs["Fac"])
-    links.new(mix.outputs["Color"], bsdf.inputs["Base Color"])
     handles.update({"ramp": ramp, "mix": mix})
+
+    # scratches: total = how strongly this surface point is scratched (0..1)
+    total, handles["scratches"] = add_scratch_nodes(nodes, links, coords, math_node)
+    # color: multiply by "darken" where scratched
+    darken = nodes.new("ShaderNodeMixRGB")
+    darken.blend_type = "MULTIPLY"
+    links.new(total, darken.inputs["Fac"])
+    links.new(mix.outputs["Color"], darken.inputs["Color1"])
+    links.new(darken.outputs["Color"], bsdf.inputs["Base Color"])
+    handles["darken"] = darken
+    # roughness: rough + total * (scratch_roughness - rough)  -> matte where scratched
+    diff = math_node("SUBTRACT", 0.7, rough.outputs["Result"])
+    handles["scratch_roughness"] = diff.inputs[0]
+    scaled = math_node("MULTIPLY", diff.outputs["Value"], total)
+    final_rough = math_node("ADD", scaled.outputs["Value"], rough.outputs["Result"])
+    links.new(final_rough.outputs["Value"], bsdf.inputs["Roughness"])
     return mat, handles
+
+
+def add_scratch_nodes(nodes, links, coords, math_node):
+    """Shader nodes for MAX_SCRATCHES rotated rectangles. Returns the output socket
+    "total" (0 = clean, up to 1 = fully scratched) and per-scratch handles."""
+    total, strips = None, []
+    for _ in range(MAX_SCRATCHES):
+        # nut-local (x, y) -> strip-local (u along the length, v across the width)
+        to_strip = nodes.new("ShaderNodeMapping")
+        links.new(coords.outputs["Object"], to_strip.inputs["Vector"])
+        uv = nodes.new("ShaderNodeSeparateXYZ")
+        links.new(to_strip.outputs["Vector"], uv.inputs["Vector"])
+        # inside = (|u| < length/2) * (|v| < width/2)
+        abs_u = math_node("ABSOLUTE", uv.outputs["X"])
+        abs_v = math_node("ABSOLUTE", uv.outputs["Y"])
+        in_u = math_node("LESS_THAN", abs_u.outputs["Value"], 0.0)
+        in_v = math_node("LESS_THAN", abs_v.outputs["Value"], 0.0)
+        inside = math_node("MULTIPLY", in_u.outputs["Value"], in_v.outputs["Value"])
+        # fine parallel lines: noise stretched along u -> long thin streaks
+        stretch = nodes.new("ShaderNodeMapping")
+        stretch.inputs["Scale"].default_value = (LINE_STRETCH[0], LINE_STRETCH[1], 1)
+        links.new(to_strip.outputs["Vector"], stretch.inputs["Vector"])
+        line_noise = nodes.new("ShaderNodeTexNoise")
+        line_noise.inputs["Scale"].default_value = 1.0
+        line_noise.inputs["Detail"].default_value = 2
+        links.new(stretch.outputs["Vector"], line_noise.inputs["Vector"])
+        line_ramp = nodes.new("ShaderNodeValToRGB")
+        links.new(line_noise.outputs["Fac"], line_ramp.inputs["Fac"])
+        # strength = base + line_amount * lines   (band: mostly base, field: mostly lines)
+        strength = math_node("MULTIPLY_ADD", line_ramp.outputs["Color"], 0.0, 0.0)
+        effect = math_node("MULTIPLY", inside.outputs["Value"], strength.outputs["Value"])
+        total = (math_node("MAXIMUM", total, effect.outputs["Value"]).outputs["Value"]
+                 if total else effect.outputs["Value"])
+        strips.append({"to_strip": to_strip, "stretch": stretch, "line_ramp": line_ramp,
+                       "half_length": in_u.inputs[1], "half_width": in_v.inputs[1],
+                       "line_amount": strength.inputs[1], "base": strength.inputs[2]})
+    return total, strips
 
 
 def randomize_material(h, p, smooth=False):
@@ -290,6 +384,57 @@ def randomize_material(h, p, smooth=False):
     color = [c * t for c, t in zip(NUT_COLOR, p["tint"])]
     h["mix"].inputs["Color1"].default_value = color + [1]
     h["mix"].inputs["Color2"].default_value = [c * p["speckle_dark"] for c in color] + [1]
+
+    d = p["scratch_darken"]
+    h["darken"].inputs["Color2"].default_value = [d, d, d, 1]
+    h["scratch_roughness"].default_value = p["scratch_roughness"]
+    for k, s in enumerate(h["scratches"]):
+        if k >= len(p["defects"]):            # unused slot: zero-size rectangle
+            s["half_length"].default_value = 0.0
+            s["half_width"].default_value = 0.0
+            continue
+        sc = p["defects"][k]
+        t = math.radians(sc["angle_deg"])
+        # Mapping node computes R(rotation) * v + location; we want R(-t) * (v - center)
+        s["to_strip"].inputs["Rotation"].default_value = (0, 0, -t)
+        s["to_strip"].inputs["Location"].default_value = (
+            -(sc["cx"] * math.cos(t) + sc["cy"] * math.sin(t)),
+            -(-sc["cx"] * math.sin(t) + sc["cy"] * math.cos(t)), 0)
+        s["half_length"].default_value = sc["length"] / 2
+        s["half_width"].default_value = sc["width"] / 2
+        s["stretch"].inputs["Location"].default_value = (
+            p["texture_offset"][1] + 10 * k, p["texture_offset"][2], 0)
+        s["line_ramp"].color_ramp.elements[0].position = sc["line_threshold"]
+        s["line_ramp"].color_ramp.elements[1].position = sc["line_threshold"] + 0.05
+        # field: faint base + strong lines; band: strong uniform matte strip
+        base, lines = (0.15, 0.85) if sc["type"] == "field" else (0.85, 0.15)
+        s["base"].default_value = base
+        s["line_amount"].default_value = lines
+
+
+def scratch_corners(sc, rotation_deg, z):
+    """World-space corners of a scratch rectangle (nut-local -> rotated with the nut)."""
+    t = math.radians(sc["angle_deg"])
+    u = np.array([math.cos(t), math.sin(t)]) * sc["length"] / 2   # along the length
+    v = np.array([-math.sin(t), math.cos(t)]) * sc["width"] / 2   # across the width
+    c = np.array([sc["cx"], sc["cy"]])
+    local = np.array([c + u + v, c - u + v, c - u - v, c + u - v])
+    r = math.radians(rotation_deg)
+    rot = np.array([[math.cos(r), -math.sin(r)], [math.sin(r), math.cos(r)]])
+    world = local @ rot.T
+    return np.column_stack([world, np.full(4, z)])
+
+
+def fill_convex_polygon(corners_px, shape):
+    """Boolean image mask of a convex polygon given in pixel coords [(x, y), ...].
+    A pixel is inside if it lies on the same side of every edge."""
+    h, w = shape
+    ys, xs = np.mgrid[0:h, 0:w]
+    signs = []
+    for (x0, y0), (x1, y1) in zip(corners_px, np.roll(corners_px, -1, axis=0)):
+        signs.append((x1 - x0) * (ys - y0) - (y1 - y0) * (xs - x0) >= 0)
+    signs = np.array(signs)
+    return signs.all(axis=0) | (~signs).all(axis=0)  # works for both winding orders
 
 
 def emission_node(mat):
@@ -399,9 +544,25 @@ with open(out_dir / "meta.jsonl", "a") as meta_file:
         bproc.camera.add_camera_pose(bproc.math.build_transformation_mat(cam_loc, cam_rot))
 
         data = bproc.renderer.render()
+
+        # scratch mask: project each rectangle into the image, keep only nut pixels
+        seg = data["category_id_segmaps"][0]
+        nut_px = seg == 1
+        for sc in p["defects"]:
+            corners_px = bproc.camera.project_points(
+                scratch_corners(sc, p["rotation_deg"], z=BODY_T))
+            region = fill_convex_polygon(corners_px, seg.shape) & nut_px
+            seg[region] = 2
+            ys, xs = np.nonzero(region)
+            sc["area_px"] = int(region.sum())
+            sc["bbox"] = ([int(xs.min()), int(ys.min()), int(xs.max()), int(ys.max())]
+                          if len(xs) else None)  # x_min, y_min, x_max, y_max
+        data["category_id_segmaps"][0] = seg
+
         bproc.writer.write_hdf5(str(out_dir), data, append_to_existing_output=True)
         meta_file.write(json.dumps({"index": i, "file": f"{i}.hdf5", "seed": args.seed,
-                                    "dataset_version": DATASET_VERSION, **p}) + "\n")
+                                    "dataset_version": args.version,
+                                    "n_defects": len(p["defects"]), **p}) + "\n")
         meta_file.flush()
         elapsed = time.time() - t_start
         print(f"[generate] {i + 1}/{args.n} done, {elapsed / (i + 1):.1f} s/image", flush=True)

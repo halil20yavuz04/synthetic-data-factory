@@ -18,11 +18,12 @@ parser.add_argument("out", type=Path)
 parser.add_argument("--n", type=int, default=16)
 parser.add_argument("--cols", type=int, default=4)
 parser.add_argument("--tile", type=int, default=256)
+parser.add_argument("--suffix", default="rgb", help="rgb or overlay (scratch outlines)")
 args = parser.parse_args()
 
 # numeric sort: 2_rgb.png before 10_rgb.png
-files = sorted(args.folder.glob("*_rgb.png"), key=lambda p: int(re.match(r"\d+", p.name)[0]))
-assert files, f"no *_rgb.png in {args.folder}, run tools/hdf5_to_png.py first"
+files = sorted(args.folder.glob(f"*_{args.suffix}.png"), key=lambda p: int(re.match(r"\d+", p.name)[0]))
+assert files, f"no *_{args.suffix}.png in {args.folder}, run tools/hdf5_to_png.py first"
 picks = [files[int(i)] for i in np.linspace(0, len(files) - 1, min(args.n, len(files)))]
 
 tiles = []

@@ -137,7 +137,31 @@ Compared 350 px close-ups of real vs render (`output/closeup_pair.png`).
 - Known small offset: synthetic nuts are ~0.8% wider on average. Fix with FILL
   before the Week 2 dataset render.
 
-### Next (Week 2)
-- Scratch synthesis (texture-based straight strips/fields, separate category_id,
-  region-level masks), 30–40% defect-free images.
-- SQLite metadata (`db/`), `tools/mask_to_yolo.py`, ~5,000-image dataset.
+## 2026-10-16 (Week 2: defect synthesis and data pipeline)
+
+### 11. Scratch synthesis
+- Each scratch is a rotated rectangle on the nut (center, angle, length, width in D),
+  following `reports/real_observations.md`: two types, "field" (many fine parallel
+  hairlines, 70%) and "band" (wide uniform matte strip, 30%), straight, anywhere on
+  the nut. 35% of images have no scratch; otherwise 1/2/3 scratches with p = 0.7/0.2/0.1.
+- Appearance (shader, `add_scratch_nodes`): inside the rectangle the color is
+  multiplied by a darken factor and roughness goes up (matte). Field lines = noise
+  stretched along the scratch direction (scale 4 along, 500 across) and thresholded.
+  The first try had too faint lines vs real seen_pool scratches; made them darker/thinner.
+- Mask (category 2): the same rectangle's corners are projected into the image with
+  the camera (`bproc.camera.project_points`), filled (`fill_convex_polygon`) and
+  intersected with the nut mask, so parts over the hole or background are dropped.
+  Appearance and mask come from the same numbers, so they line up exactly (checked
+  with red outlines in `*_overlay.png`).
+- Region-level masks on purpose: real MVTec masks cover the whole damaged area, not
+  single lines, so the synthetic labels follow the same convention.
+- `meta.jsonl` now stores per scratch: type, geometry, `area_px`, `bbox`; plus
+  `n_defects` and `dataset_version` (`--version`, default `synth_v1`).
+- Fixed the Week 1 size offset: FILL 0.89 → 0.882 (nut width now ~89.2%, real 89.1%).
+- `tools/hdf5_to_png.py` writes `_defect.png` (scratch mask) and `_overlay.png`;
+  `tools/make_grid.py --suffix overlay` shows scratch outlines in the grid.
+
+### Next
+- SQLite metadata (`db/`) + 5 check queries + `reports/data_stats.md`.
+- `tools/mask_to_yolo.py` for synthetic data and the real test set.
+- ~5,000-image dataset render (~3.5 h at 2.6 s/image).

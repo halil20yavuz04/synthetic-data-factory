@@ -39,10 +39,17 @@ def main(folder: Path) -> None:
             rgb = np.array(h["colors"])                 # H x W x 3, uint8, RGB
             seg = np.array(h["category_id_segmaps"])    # H x W, category ids
         bgr = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
-        mask = (seg > 0).astype(np.uint8) * 255
+        mask = (seg > 0).astype(np.uint8) * 255      # whole nut (incl. scratches)
+        defect = (seg == 2).astype(np.uint8) * 255   # scratches only
 
         cv2.imwrite(str(f.with_name(f"{f.stem}_rgb.png")), bgr)
         cv2.imwrite(str(f.with_name(f"{f.stem}_mask.png")), mask)
+        cv2.imwrite(str(f.with_name(f"{f.stem}_defect.png")), defect)
+        # visual check: scratch mask outline in red on the render
+        overlay = bgr.copy()
+        contours, _ = cv2.findContours(defect, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        cv2.drawContours(overlay, contours, -1, (0, 0, 255), 1)
+        cv2.imwrite(str(f.with_name(f"{f.stem}_overlay.png")), overlay)
 
         if not many:
             real = cv2.resize(cv2.imread(str(REAL_REF)), bgr.shape[1::-1],
