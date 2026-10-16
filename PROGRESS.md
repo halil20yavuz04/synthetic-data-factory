@@ -219,6 +219,95 @@ Compared 350 px close-ups of real vs render (`output/closeup_pair.png`).
   eye disagrees, find the metric's blind spot.
 - Decision: let synth_v1 finish and train it as the baseline; improve realism in
   synth_v2 (tuned on train/good + seen_pool only), then compare v1 vs v2.
+  v1 code is tagged in git as `synth_v1`.
+- synth_v2 changes (`render/generate.py`, tuned with `--no-defects` renders):
+  - boss step 0.015 → 0.006 high, ramp 0.07 → 0.025 wide: thin line, not a thick band;
+  - tabs bend down towards the rim (shader bump only, outline/masks unchanged), tip
+    slope ~24° so the outer tab areas catch the ring light and glow, like real rims;
+  - glints: tiny spots with 20% roughness that sparkle; pits stretched 3:1 (streaky);
+  - roughness 0.3–0.5 → 0.22–0.42 (sharper highlights); wider hole bead (0.065 D).
+  - A first try added mid-size color blotches: the metric went up but the nut looked
+    like marble. Removed (kept very subtle). Same lesson again: improve the cause
+    (geometry, glints), not the number.
+
+- Second round, from more visual feedback (real vs v2 side by side):
+  - countersink: straight cone (35°) sloping into the hole, gray-blue, turned rings
+    (v1 had a convex green bead; the real hole edge is a gray conical seat);
+  - micro-scratches on every nut (3 random directions, short thin lines, slightly
+    darker, tiny grooves). Real GOOD nuts are full of them; they are normal surface,
+    never in the mask, so the model learns they are not defects. Two failed tries:
+    lines 700/D across were sub-pixel → gray camouflage blobs; 5/D along → curly worms;
+  - green-yellow base color with neutral gray pits (bright = green, dark = gray);
+  - broad waviness bump → large bright patches; ring light 0.35 → 0.40.
+
+  | (mean of 8 good-only renders) | v1 | v2 | real |
+  |---|---|---|---|
+  | fine grain | 10.0 | 12.0 | 9.2 |
+  | mid-scale shading | 15.4 | 20.4 | 20.4 |
+  | brightness spread p95−p5 | 56.6 | 92.1 | 87.4 |
+
+- Status: numbers match, but close-ups still look cleaner and glossier than the real,
+  dense, "dirty" texture. Procedural noise shows diminishing returns here.
+- Option considered: hybrid (real train/good photo as surface texture + synthetic
+  scratches). Decision: stay fully procedural (cleaner "everything from Blender"
+  story) and keep tuning.
+- Third round:
+  - second, larger pit layer (scale 110) on top of the fine pits → multi-size "dirty"
+    texture; pits denser (threshold 0.48–0.6);
+  - broad hue shifts (bluish / neutral / yellowish), since the real nuts look like
+    yellow zinc coating whose tint varies across the part;
+  - micro-scratches darker and denser;
+  - lens softness: Gaussian blur σ 0.3–1.1 px on the RGB after rendering (masks stay
+    crisp like real ground truth). Without it, sharpness alone would tell synthetic
+    from real, and a model can learn such shortcuts;
+  - ring light 0.40 → 0.48 (pits made the nut darker).
+  - Intermediate try had too strong yellow (olive look) and was too dark; softened.
+
+  | (mean of 8 good-only renders) | v1 | v2 round 2 | v2 round 3 | real |
+  |---|---|---|---|---|
+  | fine grain | 10.0 | 12.0 | 10.0 | 9.2 |
+  | mid-scale shading | 15.4 | 20.4 | 19.2 | 20.4 |
+  | brightness spread | 56.6 | 92.1 | 85.2 | 87.4 |
+  | nut mean RGB | — | 78/94/85 | 79/90/83 | 89/101/96 |
+- Fourth round, from annotated user feedback (red circles on real highlights):
+  - New measurement: radial brightness profile (mean gray per radius, 40 train/good
+    images). Real: dark cone 0.13–0.16 D, bright rim ~0.17, patchy bright zone
+    0.29–0.36, tabs ~75. Used to place the geometry instead of guessing.
+  - Micro-scratches redefined: the user meant dense, BRIGHT, short lines covering the
+    whole surface like static, on a darker green base (not dark lines). Now 6
+    directions, ~30 px long, ~2 px apart, almost everywhere, brightness from color.
+    Failed try: polished (mirror) lines reflected the dark room and showed as long
+    dark scratches.
+  - Tab bend removed (real tabs do not look bent).
+  - Lighting: the uniform ring gave uniform bright bands; real highlights are local
+    and random. Ring is now a weak fill (0.12) plus 3 small lamps at random azimuth
+    (35–65° elevation, random power) → patchy, very bright highlights that move from
+    image to image.
+  - Countersink 0.123–0.173 D at 45° (reflects sideways → dark like real), rounded rim,
+    matte dark gray-blue. Bug found: the flat body top covered most of the cone (and
+    earlier the bead), only a thin ring was visible; the body hole now has the
+    countersink width.
+  - Boss edge slope moved to the measured bright zone (0.29–0.36 D).
+
+  | radial profile (mean gray) | cone 0.12–0.14 | rim 0.16–0.18 | flat 0.20–0.26 | bright 0.30–0.32 | tabs 0.38–0.46 |
+  |---|---|---|---|---|---|
+  | real | 67–72 | 99 → 72 | 70–79 | 104–111 | 73–81 |
+  | v2 round 4 | 49–54 | 85–100 | 102–104 | 125 | 74–87 |
+
+  Mean RGB 95/106/99 (real 89/101/96), fine grain 12.7, mid 18.2, spread 120.
+- Fifth round (annotated close-ups from the user):
+  - Texture is "iris"-like: thin LIGHT lines running radially from the center plus
+    light dots, about 50/50, on an almost background-dark base. Ours looked like a
+    rough surface (bump made light/dark side shading). Replaced the random-direction
+    micro-scratches by radial lines: noise sampled at (direction × K, radius × L), so it
+    varies fast around the circle and slowly outward; its 0.5-contours are radial
+    streaks, denser near the center. Direction vector instead of angle → no seam.
+    Bump grain lowered (0.4 → 0.15); grooves removed.
+  - Countersink: two bright lines (lip at the hole edge + rim), color from near
+    background at the hole to gray-white outwards (radius-driven color ramp), matte.
+  - Tab tips: depth-of-field blur, blended in beyond 0.75 × tip radius (σ 1.5–3.5 px).
+  - Result: radial profile shape close to real; mean RGB 76/86/79 (a bit dark), fine
+    9.0, mid 20.7, spread 111. Countersink still looks too smooth/plastic.
 
 ### 17. synth_v1 render (5,000 images)
 - Started `blenderproc run render/generate.py --n 5000 --seed 0 --out data/synth/synth_v1`.

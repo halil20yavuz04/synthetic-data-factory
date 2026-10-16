@@ -28,7 +28,9 @@ parser.add_argument("--no-random", action="store_true",
 parser.add_argument("--rand", default="light,material,camera,background",
                     help="randomization groups to switch on (ablation); '' = none. "
                          "Scratches stay random unless --no-random.")
-parser.add_argument("--version", default="synth_v1", help="dataset_version label in meta")
+parser.add_argument("--version", default="synth_v2", help="dataset_version label in meta")
+parser.add_argument("--no-defects", action="store_true",
+                    help="no scratches (for tuning realism against real good images)")
 args = parser.parse_args()
 
 IMG_SIZE = 512
@@ -44,27 +46,72 @@ R_HOLE = 0.246 / 2      # hole / D = 0.246 [measured]
 BODY_T = 0.06           # body thickness
 BODY_BEVEL = 0.02       # rounded outer edges -> ~10 px bright rim like the real tabs
 # The center is built by rotating a cross-section (r, z) around the axis ("lathe"):
-HOLE_FILLET = 0.05      # rounded, smooth bead around the hole (quarter circle)
-R_BOSS = 0.31           # raised center ring, ~0.62 D [visual]
-BOSS_T = 0.015          # height of the center ring above the body (subtle)
-BOSS_RAMP = 0.07        # S-shaped slope at the boss edge, max ~19° so it catches the ring light
+# Radii below from the real radial brightness profile (40 train/good images):
+# dark gray cone 0.13-0.16, bright rim ~0.17, bright patchy zone 0.29-0.36.
+CSINK_W = 0.05          # v2: countersink from the hole (0.123) out to 0.173 D: a dark cone
+CSINK_ANGLE = 45        # from horizontal: reflects sideways -> dark like the real cone (35 was lit)
+CSINK_RIM = 0.012       # rounded rim where the cone meets the flat top -> bright ring
+R_BOSS = 0.36           # boss edge slope spans 0.29-0.36 D (measured bright zone)
+BOSS_T = 0.012          # height of the boss above the body
+BOSS_RAMP = 0.07        # S-slope width; max slope ~15° so it catches the lights
+# v2: tabs bend down towards the rim (real nut is not a flat plate). Done in the shader
+# as a bump (normals only), so the measured outline and the masks stay unchanged.
+R_BEND = 0.34           # bending starts here (just outside the boss)
+BEND = 0.0             # tab bend switched off: real tabs do not look bent (visual check)
 
 # --- appearance (base values; randomized per image in sample_params) ----------
-NUT_COLOR = [0.77, 1.0, 0.89]      # mean nut color [measured], sRGB -> linear, normalized
-ROUGHNESS_RANGE = (0.3, 0.5)       # varies over the surface in large patches
+NUT_COLOR = [0.66, 1.0, 0.78]      # v2: more saturated green-yellow highlights; pits are
+                                   # neutral gray, so the mean stays near the measured color
+ROUGHNESS_RANGE = (0.22, 0.42)     # v2: lower -> sharper bright highlights (was 0.3-0.5)
 GRAIN_SCALE = 120                  # surface grain (~4 px at 512 px)
-GRAIN_STRENGTH = 0.4               # bump strength of the grain
+GRAIN_STRENGTH = 0.15              # bump strength of the grain (v2: low, the real texture is
+                                   # a color pattern; strong bump made "rough" side shadows)
 SPECKLE_SCALE = 250                # small dark pits (~2 px), main source of real texture
-SPECKLE_AMOUNT = 0.58              # higher = fewer pits (noise threshold)
+SPECKLE_ASPECT = 3                 # v2: pits stretched 3:1 -> streaky, like the real texture
+BLOTCH_SCALE = 18                  # v2: mid-size light/dark blotches (~20 px)
+BLOTCH_LOW = 0.85                  # darkest blotch (subtle: 0.55 looked like marble, not metal)
+GLINT_SCALE = 300                  # v2: tiny mirror-like spots that sparkle in the ring light
+GLINT_AMOUNT = 0.66                # higher = fewer glints (noise threshold)
+SPECKLE_AMOUNT = 0.54              # higher = fewer pits (noise threshold); v2: denser
+SPECKLE2_SCALE = 110               # v2: second, larger pit layer -> "dirty" multi-size texture
+HUE_SCALE = 4                      # v2: broad hue shifts of the yellow zinc coating
+HUE_SHIFT = [(0.85, 0.97, 1.0), (1.0, 1.0, 1.0), (1.0, 0.97, 0.82)]  # bluish / none / yellow
 SPECKLE_DARK = 0.55                # pit color = SPECKLE_DARK * nut color
 RINGS_SCALE = 80                   # concentric machining marks: irregular radial bands
 RINGS_WEIGHT = 0.25                # their share of the bump height (vs grain)
-HOLE_ROUGHNESS = 0.35              # hole bead is smoother and shinier than the rest
+HOLE_ROUGHNESS = 0.6               # countersink: matte (0.35 + lamps gave a chrome ring)
+# v2: micro-scratches. Real GOOD nuts are full of short thin random scratches. They are
+# normal surface, not defects: never in the mask. Without them the model would learn
+# "any line = defect" and raise false alarms on real good nuts.
+# "Iris" texture (v2, from annotated feedback): dark base, many light thin lines running
+# radially from the center outwards, plus light dots, about half and half.
+IRIS_K = (30, 50)                  # lines around the circle per layer (spacing ~2-4 px)
+IRIS_L = 8                         # along the radius: segments ~1/8 D long
+                                   # (700 across was sub-pixel -> gray mush; 5 along -> curly worms)
+MICRO_WIDTH = 0.06                 # line = where noise is within this of 0.5 (contour)
+MICRO_PATCH_SCALE = 30             # lines only inside random patches -> broken segments
+MICRO_AMOUNT = 0.25                # patch threshold: low -> lines almost everywhere
+DOT_SCALE = 300                    # light dots between the lines
+DOT_AMOUNT = 0.6                   # higher = fewer dots
+MICRO_BASE = 0.5                   # base between lines/dots is dark (almost background);
+                                   # the green look comes from the many light lines/dots
+CSINK_INNER = (0.02, 0.02, 0.025)  # countersink color: near background at the hole ...
+CSINK_OUTER = (0.45, 0.47, 0.5)    # ... to gray-white at the rim (real images)
+CSINK_LIP = 0.008                  # rounded lip at the hole edge -> second bright line
+DEFOCUS_START = 0.75               # outer tabs blurred (depth of field) beyond 0.75 x tip radius
+WAVE_SCALE = 5                     # v2: broad surface waviness -> large bright patches
+WAVE_STRENGTH = 0.6
 BG_COLOR_SRGB = [23, 23, 29]       # #17171d [measured]
 WORLD_STRENGTH = 0.02              # faint ambient fill from all directions
 RING_HEIGHT = 2.0                  # ring light above the nut (main light)
 RING_RADII = (1.0, 2.5)            # inner/outer radius -> light arrives 27°-51° from vertical
-RING_STRENGTH = 0.35               # emission strength; tuned to real mean RGB + contrast
+RING_STRENGTH = 0.16               # v2: ring is now a soft fill; lamps make the highlights
+# v2: small lamps at random positions -> local, very bright, irregular highlights
+# (real highlights are patchy; a uniform ring gave uniform bright bands)
+N_LAMPS = 3
+LAMP_SIZE = 0.4
+LAMP_DIST = 2.2
+LAMP_ENERGY = 6.5                  # W, randomized per lamp (tuned to real mean brightness)
 KEY_ANGLE = 150                    # deg, ~10 o'clock in the image [measured]
 KEY_ELEVATION = 30                 # deg
 KEY_ENERGY = 15.0                  # weak directional light (W)
@@ -89,10 +136,13 @@ FILL = 0.882            # 0.89 gave 89.9% width vs real 89.1% (Week 1 check) -> 
 
 # Randomization groups for the ablation study (--rand). Scratches are always random.
 RAND_GROUPS = {
-    "light": ["ring_strength", "key_angle_deg", "key_elevation_deg", "key_energy"],
+    "light": ["ring_strength", "key_angle_deg", "key_elevation_deg", "key_energy",
+              "lamp_azimuth_deg", "lamp_elevation_deg", "lamp_energy"],
     "material": ["roughness_min", "roughness_max", "grain_strength", "speckle_amount",
-                 "speckle_dark", "tint", "texture_offset"],
-    "camera": ["rotation_deg", "cam_tilt_deg", "cam_tilt_dir_deg", "cam_dist_scale"],
+                 "speckle_dark", "tint", "texture_offset", "bend", "blotch_low",
+                 "micro_amount", "wave_strength", "hue_amount"],
+    "camera": ["rotation_deg", "cam_tilt_deg", "cam_tilt_dir_deg", "cam_dist_scale",
+               "blur_sigma", "edge_blur"],
     "background": ["bg_shift"],
 }
 
@@ -109,10 +159,15 @@ def sample_params(rng, groups, defects=True):
         "cam_tilt_deg": 0.0,
         "cam_tilt_dir_deg": 0.0,
         "cam_dist_scale": 1.0,
+        "blur_sigma": 0.7,             # v2: lens softness in px (real photos are not crisp)
+        "edge_blur": 2.5,              # v2: extra blur (px) on the outer tabs: depth of field
         "ring_strength": RING_STRENGTH,
         "key_angle_deg": float(KEY_ANGLE),
         "key_elevation_deg": float(KEY_ELEVATION),
         "key_energy": KEY_ENERGY,
+        "lamp_azimuth_deg": [30.0, 150.0, 270.0],
+        "lamp_elevation_deg": [50.0, 50.0, 50.0],
+        "lamp_energy": [LAMP_ENERGY] * N_LAMPS,
         "roughness_min": ROUGHNESS_RANGE[0],
         "roughness_max": ROUGHNESS_RANGE[1],
         "grain_strength": GRAIN_STRENGTH,
@@ -123,6 +178,11 @@ def sample_params(rng, groups, defects=True):
         "texture_offset": [0.0, 0.0, 0.0],
         "scratch_darken": 0.65,        # scratch color = darken * surface color
         "scratch_roughness": 0.7,      # matte inside scratches
+        "bend": BEND,
+        "blotch_low": BLOTCH_LOW,
+        "micro_amount": MICRO_AMOUNT,
+        "hue_amount": 0.7,
+        "wave_strength": WAVE_STRENGTH,
         "defects": [],
     }
     if not groups and not defects:  # --no-random: pure base scene
@@ -134,15 +194,20 @@ def sample_params(rng, groups, defects=True):
         "cam_tilt_deg": rng.uniform(0, 3),             # real: no visible tilt
         "cam_tilt_dir_deg": rng.uniform(0, 360),
         "cam_dist_scale": rng.uniform(0.995, 1.005),   # real: scale spread ±0.4%
+        "blur_sigma": rng.uniform(0.3, 1.1),
+        "edge_blur": rng.uniform(1.5, 3.5),
         # real nut mean gray 98.5 ± 10 (84-122) over 220 train/good images
         "ring_strength": RING_STRENGTH * rng.uniform(0.75, 1.3),
         "key_angle_deg": KEY_ANGLE + rng.uniform(-30, 30),
         "key_elevation_deg": rng.uniform(20, 45),
         "key_energy": rng.uniform(0, 30),
+        "lamp_azimuth_deg": rng.uniform(0, 360, N_LAMPS).round(1).tolist(),
+        "lamp_elevation_deg": rng.uniform(35, 65, N_LAMPS).round(1).tolist(),
+        "lamp_energy": (LAMP_ENERGY * rng.uniform(0.4, 1.6, N_LAMPS)).round(1).tolist(),
         "roughness_min": ROUGHNESS_RANGE[0] + shift,
         "roughness_max": ROUGHNESS_RANGE[1] + shift,
-        "grain_strength": rng.uniform(0.2, 0.6),
-        "speckle_amount": rng.uniform(0.52, 0.65),
+        "grain_strength": rng.uniform(0.05, 0.3),
+        "speckle_amount": rng.uniform(0.48, 0.6),
         "speckle_dark": rng.uniform(0.45, 0.7),
         "tint": rng.normal(1.0, 0.03, 3).round(4).tolist(),
         "bg_shift": int(rng.integers(-3, 4)),
@@ -150,6 +215,11 @@ def sample_params(rng, groups, defects=True):
         "texture_offset": rng.uniform(-100, 100, 3).round(3).tolist(),
         "scratch_darken": rng.uniform(0.35, 0.7),
         "scratch_roughness": rng.uniform(0.55, 0.85),
+        "bend": BEND,
+        "blotch_low": rng.uniform(0.75, 0.95),
+        "micro_amount": rng.uniform(0.15, 0.4),
+        "wave_strength": rng.uniform(0.3, 0.9),
+        "hue_amount": rng.uniform(0.3, 1.0),
         "defects": sample_scratches(rng),
     })
     for group, keys in RAND_GROUPS.items():
@@ -249,6 +319,17 @@ def arc(center_r, center_z, radius_r, radius_z, t0, t1, steps=8):
     return [(center_r + radius_r * math.cos(t), center_z + radius_z * math.sin(t)) for t in ts]
 
 
+def rounded_corner(p0, corner, p2, radius, steps=8):
+    """Polyline p0 -> corner -> (towards p2), with the corner rounded over `radius`
+    (quadratic Bezier). Returns points from p0 to the end of the rounding."""
+    p0, c, p2 = map(np.array, (p0, corner, p2))
+    a = c + (p0 - c) / np.linalg.norm(p0 - c) * radius   # rounding starts here
+    b = c + (p2 - c) / np.linalg.norm(p2 - c) * radius   # and ends here
+    t = np.linspace(0, 1, steps)[:, None]
+    curve = (1 - t) ** 2 * a + 2 * (1 - t) * t * c + t ** 2 * b
+    return [tuple(p0)] + [tuple(q) for q in curve]
+
+
 def smooth_step(r0, r1, z0, z1, steps=10):
     """S-shaped (cosine) slope from (r0, z0) to (r1, z1): flat at both ends,
     steepest in the middle, never vertical."""
@@ -288,19 +369,40 @@ def make_metal_material(name, roughness_range, grain, rings):
         return m
 
     handles = {"mapping": mapping, "bump": None, "ring_phase": None}
+    # distance from the center axis: length of (x, y, 0), unshifted coordinates
+    flat = nodes.new("ShaderNodeVectorMath")
+    flat.operation = "MULTIPLY"
+    flat.inputs[1].default_value = (1, 1, 0)
+    links.new(coords.outputs["Object"], flat.inputs[0])
+    radius = nodes.new("ShaderNodeVectorMath")
+    radius.operation = "LENGTH"
+    links.new(flat.outputs["Vector"], radius.inputs[0])
+
+    # tab bend: height = -bend * clamp((r - R_BEND) / (R_TIP - R_BEND), 0, 1)^2
+    t = math_node("SUBTRACT", radius.outputs["Value"], R_BEND)
+    t = math_node("DIVIDE", t.outputs["Value"], R_TIP - R_BEND)
+    t = math_node("MAXIMUM", t.outputs["Value"], 0.0)
+    t = math_node("POWER", t.outputs["Value"], 2.0)
+    bend_h = math_node("MULTIPLY", t.outputs["Value"], -BEND)
+    handles["bend"] = bend_h.inputs[1]
+    bend_bump = nodes.new("ShaderNodeBump")
+    bend_bump.inputs["Strength"].default_value = 1.0
+    bend_bump.inputs["Distance"].default_value = 1.0   # height is already in scene units
+    links.new(bend_h.outputs["Value"], bend_bump.inputs["Height"])
+    # broad waviness on top of the bend: surface is not perfectly smooth -> big highlights
+    wave_bump = nodes.new("ShaderNodeBump")
+    wave_bump.inputs["Distance"].default_value = 0.01
+    links.new(noise(WAVE_SCALE, 2).outputs["Fac"], wave_bump.inputs["Height"])
+    links.new(bend_bump.outputs["Normal"], wave_bump.inputs["Normal"])
+    links.new(wave_bump.outputs["Normal"], bsdf.inputs["Normal"])
+    handles["wave"] = wave_bump
+    surface_normal = wave_bump.outputs["Normal"]
+
     # bump height = grain + RINGS_WEIGHT * concentric marks
     height = None
     if grain:
         height = noise(GRAIN_SCALE, 2).outputs["Fac"]
     if rings:
-        # distance from the center axis: length of (x, y, 0), unshifted coordinates
-        flat = nodes.new("ShaderNodeVectorMath")
-        flat.operation = "MULTIPLY"
-        flat.inputs[1].default_value = (1, 1, 0)
-        links.new(coords.outputs["Object"], flat.inputs[0])
-        radius = nodes.new("ShaderNodeVectorMath")
-        radius.operation = "LENGTH"
-        links.new(flat.outputs["Vector"], radius.inputs[0])
         # random phase -> different ring positions per image
         phase = math_node("ADD", radius.outputs["Value"], 0.0)
         handles["ring_phase"] = phase.inputs[1]
@@ -312,11 +414,15 @@ def make_metal_material(name, roughness_range, grain, rings):
         links.new(phase.outputs["Value"], band.inputs["W"])
         ring_h = math_node("MULTIPLY", band.outputs["Fac"], RINGS_WEIGHT).outputs["Value"]
         height = math_node("ADD", height, ring_h).outputs["Value"] if height else ring_h
+    micro, handles["micro"] = None, []
+    if grain:
+        micro, handles["micro"] = add_iris_nodes(nodes, links, coords, math_node, noise)
     if height is not None:
         bump = nodes.new("ShaderNodeBump")
         bump.inputs["Strength"].default_value = GRAIN_STRENGTH
         bump.inputs["Distance"].default_value = 0.002
         links.new(height, bump.inputs["Height"])
+        links.new(surface_normal, bump.inputs["Normal"])  # grain on the bent, wavy surface
         links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
         handles["bump"] = bump
 
@@ -327,14 +433,64 @@ def make_metal_material(name, roughness_range, grain, rings):
     rough.inputs["To Max"].default_value = roughness_range[1]
     links.new(patches.outputs["Fac"], rough.inputs["Value"])
     handles["rough"] = rough
+    # glints: in tiny spots roughness drops to 20% -> sharp sparkles
+    glint = noise(GLINT_SCALE, 0)
+    glint_ramp = nodes.new("ShaderNodeValToRGB")
+    glint_ramp.color_ramp.elements[0].position = GLINT_AMOUNT
+    glint_ramp.color_ramp.elements[1].position = GLINT_AMOUNT + 0.03
+    glint_ramp.color_ramp.elements[0].color = (1, 1, 1, 1)
+    glint_ramp.color_ramp.elements[1].color = (0.2, 0.2, 0.2, 1)
+    links.new(glint.outputs["Fac"], glint_ramp.inputs["Fac"])
+    base_rough = math_node("MULTIPLY", rough.outputs["Result"], glint_ramp.outputs["Color"])
+    if micro is not None:  # lines slightly smoother (x0.8); x0.25 mirrored the dark room
+        shiny = math_node("MULTIPLY_ADD", micro, -0.2, 1.0)
+        base_rough = math_node("MULTIPLY", base_rough.outputs["Value"], shiny.outputs["Value"])
 
     # speckles: where noise > threshold, darken the base color
     speckle = noise(SPECKLE_SCALE, 0)
+    stretch = nodes.new("ShaderNodeMapping")       # squash one axis -> streaks
+    stretch.inputs["Scale"].default_value = (1, SPECKLE_ASPECT, 1)
+    links.new(mapping.outputs["Vector"], stretch.inputs["Vector"])
+    links.new(stretch.outputs["Vector"], speckle.inputs["Vector"])
     ramp = nodes.new("ShaderNodeValToRGB")
     links.new(speckle.outputs["Fac"], ramp.inputs["Fac"])
     mix = nodes.new("ShaderNodeMixRGB")
     links.new(ramp.outputs["Color"], mix.inputs["Fac"])
     handles.update({"ramp": ramp, "mix": mix})
+    # second, larger pits on top (same stretch)
+    speckle2 = noise(SPECKLE2_SCALE, 0)
+    links.new(stretch.outputs["Vector"], speckle2.inputs["Vector"])
+    ramp2 = nodes.new("ShaderNodeValToRGB")
+    links.new(speckle2.outputs["Fac"], ramp2.inputs["Fac"])
+    mix2 = nodes.new("ShaderNodeMixRGB")
+    links.new(ramp2.outputs["Color"], mix2.inputs["Fac"])
+    links.new(mix.outputs["Color"], mix2.inputs["Color1"])
+    # broad hue shifts: multiply by bluish / neutral / yellowish (zinc coating varies)
+    hue_ramp = nodes.new("ShaderNodeValToRGB")
+    hue_ramp.color_ramp.elements[0].position = 0.3
+    hue_ramp.color_ramp.elements[1].position = 0.7
+    hue_ramp.color_ramp.elements.new(0.5)
+    for el, c in zip(hue_ramp.color_ramp.elements, HUE_SHIFT):
+        el.color = (*c, 1)
+    links.new(noise(HUE_SCALE, 2).outputs["Fac"], hue_ramp.inputs["Fac"])
+    hued = nodes.new("ShaderNodeMixRGB")
+    hued.blend_type = "MULTIPLY"
+    links.new(mix2.outputs["Color"], hued.inputs["Color1"])
+    links.new(hue_ramp.outputs["Color"], hued.inputs["Color2"])
+    handles.update({"ramp2": ramp2, "mix2": mix2, "hue": hued})
+
+    # mid-size blotches: multiply the color by a gray between blotch_low and 1
+    blotch = noise(BLOTCH_SCALE, 3)
+    blotch_ramp = nodes.new("ShaderNodeValToRGB")
+    blotch_ramp.color_ramp.elements[0].position = 0.35
+    blotch_ramp.color_ramp.elements[1].position = 0.65
+    links.new(blotch.outputs["Fac"], blotch_ramp.inputs["Fac"])
+    blotched = nodes.new("ShaderNodeMixRGB")
+    blotched.blend_type = "MULTIPLY"
+    blotched.inputs["Fac"].default_value = 1.0
+    links.new(hued.outputs["Color"], blotched.inputs["Color1"])
+    links.new(blotch_ramp.outputs["Color"], blotched.inputs["Color2"])
+    handles["blotch_ramp"] = blotch_ramp
 
     # scratches: total = how strongly this surface point is scratched (0..1)
     total, handles["scratches"] = add_scratch_nodes(nodes, links, coords, math_node)
@@ -342,16 +498,110 @@ def make_metal_material(name, roughness_range, grain, rings):
     darken = nodes.new("ShaderNodeMixRGB")
     darken.blend_type = "MULTIPLY"
     links.new(total, darken.inputs["Fac"])
-    links.new(mix.outputs["Color"], darken.inputs["Color1"])
+    surface_color = blotched.outputs["Color"]
+    if micro is not None:  # darker base between the lines, full color on the lines
+        micro_mix = nodes.new("ShaderNodeMixRGB")
+        micro_mix.blend_type = "MULTIPLY"
+        not_line = math_node("SUBTRACT", 1.0, micro)
+        links.new(not_line.outputs["Value"], micro_mix.inputs["Fac"])
+        links.new(surface_color, micro_mix.inputs["Color1"])
+        micro_mix.inputs["Color2"].default_value = (MICRO_BASE, MICRO_BASE, MICRO_BASE, 1)
+        surface_color = micro_mix.outputs["Color"]
+    links.new(surface_color, darken.inputs["Color1"])
     links.new(darken.outputs["Color"], bsdf.inputs["Base Color"])
     handles["darken"] = darken
     # roughness: rough + total * (scratch_roughness - rough)  -> matte where scratched
-    diff = math_node("SUBTRACT", 0.7, rough.outputs["Result"])
+    diff = math_node("SUBTRACT", 0.7, base_rough.outputs["Value"])
     handles["scratch_roughness"] = diff.inputs[0]
     scaled = math_node("MULTIPLY", diff.outputs["Value"], total)
-    final_rough = math_node("ADD", scaled.outputs["Value"], rough.outputs["Result"])
+    final_rough = math_node("ADD", scaled.outputs["Value"], base_rough.outputs["Value"])
     links.new(final_rough.outputs["Value"], bsdf.inputs["Roughness"])
     return mat, handles
+
+
+def add_iris_nodes(nodes, links, coords, math_node, noise):
+    """Iris-like texture: thin light lines running radially + light dots.
+    Lines: noise sampled at (direction * K, radius * L): it changes fast around the
+    circle and slowly along the radius, so its 0.5-contours are radial streaks, denser
+    near the center (like an iris). Using the direction vector instead of the angle
+    avoids a seam at ±180°. Returns the 0/1 "light" output socket and handles."""
+    flat = nodes.new("ShaderNodeVectorMath")
+    flat.operation = "MULTIPLY"
+    flat.inputs[1].default_value = (1, 1, 0)
+    links.new(coords.outputs["Object"], flat.inputs[0])
+    direction = nodes.new("ShaderNodeVectorMath")
+    direction.operation = "NORMALIZE"
+    links.new(flat.outputs["Vector"], direction.inputs[0])
+    radius = nodes.new("ShaderNodeVectorMath")
+    radius.operation = "LENGTH"
+    links.new(flat.outputs["Vector"], radius.inputs[0])
+    along = nodes.new("ShaderNodeCombineXYZ")
+    links.new(math_node("MULTIPLY", radius.outputs["Value"], float(IRIS_L)).outputs["Value"],
+              along.inputs["Z"])
+    light, layers = None, []
+    for k in IRIS_K:
+        around = nodes.new("ShaderNodeVectorMath")
+        around.operation = "SCALE"
+        around.inputs["Scale"].default_value = float(k)
+        links.new(direction.outputs["Vector"], around.inputs[0])
+        v = nodes.new("ShaderNodeVectorMath")
+        v.operation = "ADD"
+        links.new(around.outputs["Vector"], v.inputs[0])
+        links.new(along.outputs["Vector"], v.inputs[1])
+        n = nodes.new("ShaderNodeTexNoise")
+        n.noise_dimensions = "4D"              # W = random phase per image
+        n.inputs["Scale"].default_value = 1.0
+        n.inputs["Detail"].default_value = 0.0
+        links.new(v.outputs["Vector"], n.inputs["Vector"])
+        off = math_node("SUBTRACT", n.outputs["Fac"], 0.5)
+        dist = math_node("ABSOLUTE", off.outputs["Value"])
+        line = math_node("LESS_THAN", dist.outputs["Value"], MICRO_WIDTH)
+        patch = math_node("GREATER_THAN", noise(MICRO_PATCH_SCALE, 1).outputs["Fac"], MICRO_AMOUNT)
+        seg = math_node("MULTIPLY", line.outputs["Value"], patch.outputs["Value"])
+        light = (math_node("MAXIMUM", light, seg.outputs["Value"]).outputs["Value"]
+                 if light else seg.outputs["Value"])
+        layers.append({"w": n.inputs["W"], "amount": patch.inputs[1]})
+    dots = math_node("GREATER_THAN", noise(DOT_SCALE, 0).outputs["Fac"], DOT_AMOUNT)
+    light = math_node("MAXIMUM", light, dots.outputs["Value"]).outputs["Value"]
+    return light, layers
+
+
+def make_countersink_material():
+    """Countersink: color goes from near-background at the hole to gray-white at the rim."""
+    mat = bproc.material.create("nut_countersink")
+    nodes, links = mat.nodes, mat.links
+    bsdf = mat.get_the_one_node_with_type("BsdfPrincipled")
+    bsdf.inputs["Metallic"].default_value = 0.6
+    bsdf.inputs["Roughness"].default_value = HOLE_ROUGHNESS
+    coords = nodes.new("ShaderNodeTexCoord")
+    flat = nodes.new("ShaderNodeVectorMath")
+    flat.operation = "MULTIPLY"
+    flat.inputs[1].default_value = (1, 1, 0)
+    links.new(coords.outputs["Object"], flat.inputs[0])
+    radius = nodes.new("ShaderNodeVectorMath")
+    radius.operation = "LENGTH"
+    links.new(flat.outputs["Vector"], radius.inputs[0])
+    t = nodes.new("ShaderNodeMapRange")       # radius -> 0 (hole) .. 1 (rim)
+    t.inputs["From Min"].default_value = R_HOLE
+    t.inputs["From Max"].default_value = R_HOLE + CSINK_W
+    links.new(radius.outputs["Value"], t.inputs["Value"])
+    ramp = nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].color = (*CSINK_INNER, 1)
+    ramp.color_ramp.elements[1].color = (*CSINK_OUTER, 1)
+    links.new(t.outputs["Result"], ramp.inputs["Fac"])
+    grain = nodes.new("ShaderNodeTexNoise")   # fine texture: not a smooth plastic ring
+    grain.inputs["Scale"].default_value = 250
+    links.new(coords.outputs["Object"], grain.inputs["Vector"])
+    shade = nodes.new("ShaderNodeMapRange")
+    shade.inputs["To Min"].default_value = 0.6
+    links.new(grain.outputs["Fac"], shade.inputs["Value"])
+    textured = nodes.new("ShaderNodeMixRGB")
+    textured.blend_type = "MULTIPLY"
+    textured.inputs["Fac"].default_value = 1.0
+    links.new(ramp.outputs["Color"], textured.inputs["Color1"])
+    links.new(shade.outputs["Result"], textured.inputs["Color2"])
+    links.new(textured.outputs["Color"], bsdf.inputs["Base Color"])
+    return mat
 
 
 def add_scratch_nodes(nodes, links, coords, math_node):
@@ -391,21 +641,33 @@ def add_scratch_nodes(nodes, links, coords, math_node):
     return total, strips
 
 
-def randomize_material(h, p, smooth=False):
+def randomize_material(h, p):
     """Apply per-image parameters p to the material nodes h."""
     h["mapping"].inputs["Location"].default_value = p["texture_offset"]
     if h["ring_phase"] is not None:
         h["ring_phase"].default_value = p["texture_offset"][0]
     if h["bump"] is not None:
         h["bump"].inputs["Strength"].default_value = p["grain_strength"]
-    if not smooth:
-        h["rough"].inputs["To Min"].default_value = p["roughness_min"]
-        h["rough"].inputs["To Max"].default_value = p["roughness_max"]
+    h["rough"].inputs["To Min"].default_value = p["roughness_min"]
+    h["rough"].inputs["To Max"].default_value = p["roughness_max"]
     h["ramp"].color_ramp.elements[0].position = p["speckle_amount"]
     h["ramp"].color_ramp.elements[1].position = p["speckle_amount"] + 0.05
     color = [c * t for c, t in zip(NUT_COLOR, p["tint"])]
     h["mix"].inputs["Color1"].default_value = color + [1]
-    h["mix"].inputs["Color2"].default_value = [c * p["speckle_dark"] for c in color] + [1]
+    pit = sum(color) / 3 * p["speckle_dark"]      # pits are neutral gray, not green
+    h["mix"].inputs["Color2"].default_value = [pit, pit, pit, 1]
+    h["ramp2"].color_ramp.elements[0].position = p["speckle_amount"] + 0.04
+    h["ramp2"].color_ramp.elements[1].position = p["speckle_amount"] + 0.09
+    h["mix2"].inputs["Color2"].default_value = [pit, pit, pit, 1]
+    h["hue"].inputs["Fac"].default_value = p["hue_amount"]
+    h["wave"].inputs["Strength"].default_value = p["wave_strength"]
+    for k, layer in enumerate(h["micro"]):
+        layer["w"].default_value = p["texture_offset"][k % 3]
+        layer["amount"].default_value = p["micro_amount"]
+
+    h["bend"].default_value = -p["bend"]
+    low = p["blotch_low"]
+    h["blotch_ramp"].color_ramp.elements[0].color = (low, low, low, 1)
 
     d = p["scratch_darken"]
     h["darken"].inputs["Color2"].default_value = [d, d, d, 1]
@@ -432,6 +694,32 @@ def randomize_material(h, p, smooth=False):
         base, lines = (0.15, 0.85) if sc["type"] == "field" else (0.85, 0.15)
         s["base"].default_value = base
         s["line_amount"].default_value = lines
+
+
+def gaussian_blur(img, sigma):
+    """Separable Gaussian blur in NumPy (no OpenCV inside Blender): lens softness."""
+    if sigma <= 0:
+        return img
+    r = int(3 * sigma + 0.5)
+    k = np.exp(-0.5 * (np.arange(-r, r + 1) / sigma) ** 2)
+    k /= k.sum()
+    out = img.astype(np.float32)
+    pad = np.pad(out, ((r, r), (r, r), (0, 0)), mode="edge")
+    out = sum(w * pad[:, i:i + img.shape[1]] for i, w in enumerate(k))          # rows
+    out = sum(w * out[i:i + img.shape[0], :] for i, w in enumerate(k))          # cols
+    return np.clip(out + 0.5, 0, 255).astype(img.dtype)
+
+
+def edge_defocus(img, center_px, tip_radius_px, sigma):
+    """Depth-of-field look: blend towards a blurred copy beyond DEFOCUS_START x tip
+    radius (outer tabs). Real photos show soft tab tips while the center is sharp."""
+    h, w = img.shape[:2]
+    ys, xs = np.mgrid[0:h, 0:w]
+    r = np.hypot(xs - center_px[0], ys - center_px[1]) / tip_radius_px
+    weight = np.clip((r - DEFOCUS_START) / (1 - DEFOCUS_START), 0, 1)[..., None]
+    blurred = gaussian_blur(img, sigma).astype(np.float32)
+    out = img.astype(np.float32) * (1 - weight) + blurred * weight
+    return np.clip(out + 0.5, 0, 255).astype(img.dtype)
 
 
 def scratch_corners(sc, rotation_deg, z):
@@ -477,22 +765,28 @@ bproc.renderer.set_output_format(view_transform="Standard")  # colors as written
 
 # --- nut ----------------------------------------------------------------------
 top_z = BODY_T + BOSS_T
-body = make_extruded("nut_body", outline_points(), circle_points(R_HOLE), BODY_T, BODY_BEVEL)
+# body hole = countersink width: otherwise the flat body top hides most of the cone
+# (bug found in v2: only a thin ring of the cone/bead was visible)
+body = make_extruded("nut_body", outline_points(), circle_points(R_HOLE + CSINK_W),
+                     BODY_T, BODY_BEVEL)
 body.set_location([0, 0, BODY_T / 2])
 
 # center cross-section, from the hole outward:
-#   hole bead (convex quarter circle) -> flat boss top -> S-shaped slope down to the body
-hole_bead = arc(R_HOLE + HOLE_FILLET, top_z - HOLE_FILLET, HOLE_FILLET, HOLE_FILLET, 180, 90)
-boss_section = ([(R_HOLE + HOLE_FILLET, top_z), (R_BOSS - BOSS_RAMP, top_z)]
+#   countersink (straight cone down into the hole) -> flat boss top -> S-slope to the body
+csink_depth = CSINK_W * math.tan(math.radians(CSINK_ANGLE))
+inner = (R_HOLE, top_z - csink_depth)      # where the cone meets the hole bore
+outer = (R_HOLE + CSINK_W, top_z)          # where the cone meets the flat top
+hole_bead = (rounded_corner((R_HOLE, inner[1] - 0.02), inner, outer, CSINK_LIP)   # lip
+             + rounded_corner(inner, outer, (outer[0] + 1.0, top_z), CSINK_RIM)[1:])  # rim
+boss_section = ([hole_bead[-1], (R_BOSS - BOSS_RAMP, top_z)]
                 + smooth_step(R_BOSS - BOSS_RAMP, R_BOSS, top_z, BODY_T)[1:])
-hole = make_lathe("nut_hole_bead", hole_bead)
+hole = make_lathe("nut_countersink", hole_bead)
 boss = make_lathe("nut_boss", boss_section)
 
 metal, metal_h = make_metal_material("nut_metal", ROUGHNESS_RANGE, grain=True, rings=True)
-smooth, smooth_h = make_metal_material("nut_hole_metal", (HOLE_ROUGHNESS, HOLE_ROUGHNESS),
-                                       grain=False, rings=False)
+countersink_mat = make_countersink_material()
 nut_parts = (body, boss, hole)
-for part, mat in zip(nut_parts, (metal, metal, smooth)):
+for part, mat in zip(nut_parts, (metal, metal, countersink_mat)):
     part.replace_materials(mat)
     part.set_cp("category_id", 1)  # 1 = nut in the segmentation mask
 
@@ -523,6 +817,13 @@ key = bproc.types.Light()
 key.set_type("AREA")
 key.blender_obj.data.size = 1.0
 
+lamps = []
+for _ in range(N_LAMPS):
+    lamp = bproc.types.Light()
+    lamp.set_type("AREA")
+    lamp.blender_obj.data.size = LAMP_SIZE
+    lamps.append(lamp)
+
 # --- camera intrinsics (fixed; distance jitter changes the apparent size) -----
 frame_width = 2 * R_TIP / FILL
 fov = 2 * math.atan(frame_width / 2 / (CAM_HEIGHT - top_z))
@@ -541,11 +842,12 @@ with open(out_dir / "meta.jsonl", "a") as meta_file:
     for i in range(args.n):
         rng = np.random.default_rng([args.seed, i])  # image i is reproducible on its own
         p = sample_params(rng, groups=rand_groups, defects=not args.no_random)
+        if args.no_defects:
+            p["defects"] = []
 
         for part in nut_parts:
             part.set_rotation_euler([0, 0, math.radians(p["rotation_deg"])])
         randomize_material(metal_h, p)
-        randomize_material(smooth_h, p, smooth=True)
         ground_emission.inputs["Color"].default_value = (
             [srgb_to_linear(c + p["bg_shift"]) for c in BG_COLOR_SRGB] + [1])
         ring_emission.inputs["Strength"].default_value = p["ring_strength"]
@@ -556,6 +858,14 @@ with open(out_dir / "meta.jsonl", "a") as meta_file:
         key.set_location(key_loc)
         key.set_rotation_mat(bproc.camera.rotation_from_forward_vec(-key_loc))
         key.set_energy(p["key_energy"])
+        for lamp, az, el, e in zip(lamps, p["lamp_azimuth_deg"], p["lamp_elevation_deg"],
+                                   p["lamp_energy"]):
+            az, el = math.radians(az), math.radians(el)
+            loc = LAMP_DIST * np.array([math.cos(el) * math.cos(az),
+                                        math.cos(el) * math.sin(az), math.sin(el)])
+            lamp.set_location(loc)
+            lamp.set_rotation_mat(bproc.camera.rotation_from_forward_vec(-loc))
+            lamp.set_energy(e)
 
         # camera on a small cone around the vertical, always aimed at the nut center
         bproc.utility.reset_keyframes()
@@ -568,6 +878,10 @@ with open(out_dir / "meta.jsonl", "a") as meta_file:
         bproc.camera.add_camera_pose(bproc.math.build_transformation_mat(cam_loc, cam_rot))
 
         data = bproc.renderer.render()
+        data["colors"][0] = gaussian_blur(data["colors"][0], p["blur_sigma"])
+        center_px = bproc.camera.project_points(np.array([[0.0, 0.0, top_z]]))[0]
+        data["colors"][0] = edge_defocus(data["colors"][0], center_px,
+                                         FILL * IMG_SIZE / 2, p["edge_blur"])
 
         # scratch mask: project each rectangle into the image, keep only nut pixels
         seg = data["category_id_segmaps"][0]
