@@ -8,6 +8,7 @@ import blenderproc as bproc  # must be the very first line (BlenderProc checks t
 # Run from the repo root:
 #     blenderproc run render/generate.py --n 200 --seed 0
 #     blenderproc run render/generate.py --n 1 --no-random --out output/render_test
+#     blenderproc run render/generate.py --n 2000 --rand light --out data/synth/abl_A1 --version abl_A1
 # Output: <out>/N.hdf5 + <out>/meta.jsonl  (convert with tools/hdf5_to_png.py)
 import argparse
 import json
@@ -22,7 +23,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--n", type=int, default=200, help="number of images")
 parser.add_argument("--seed", type=int, default=0, help="master seed")
 parser.add_argument("--out", default="data/synth/week1", help="output folder")
-parser.add_argument("--no-random", action="store_true", help="render base values only")
+parser.add_argument("--no-random", action="store_true",
+                    help="render base values only (no randomization, no scratches)")
+parser.add_argument("--rand", default="light,material,camera,background",
+                    help="randomization groups to switch on (ablation); '' = none. "
+                         "Scratches stay random unless --no-random.")
 parser.add_argument("--version", default="synth_v1", help="dataset_version label in meta")
 args = parser.parse_args()
 
@@ -82,11 +87,24 @@ CAM_HEIGHT = 10.0       # far away -> almost orthographic
 FILL = 0.882            # 0.89 gave 89.9% width vs real 89.1% (Week 1 check) -> scaled
 
 
-def sample_params(rng, randomize):
-    """All per-image scene parameters. Base values if randomize is False.
-    Ranges: real data spread where measured (reports/real_observations.md),
-    otherwise small jitter around the tuned base value."""
-    p = {
+# Randomization groups for the ablation study (--rand). Scratches are always random.
+RAND_GROUPS = {
+    "light": ["ring_strength", "key_angle_deg", "key_elevation_deg", "key_energy"],
+    "material": ["roughness_min", "roughness_max", "grain_strength", "speckle_amount",
+                 "speckle_dark", "tint", "texture_offset"],
+    "camera": ["rotation_deg", "cam_tilt_deg", "cam_tilt_dir_deg", "cam_dist_scale"],
+    "background": ["bg_shift"],
+}
+
+
+def sample_params(rng, groups, defects=True):
+    """All per-image scene parameters. Ranges: real data spread where measured
+    (reports/real_observations.md), otherwise small jitter around the base value.
+    groups: randomization groups that are on; the others keep their base values.
+    All random values are always drawn (in the same order), and disabled groups are
+    overwritten afterwards. So image i gets the same scratches in every ablation run:
+    only the switched-off group differs (a controlled experiment)."""
+    base = {
         "rotation_deg": 0.0,
         "cam_tilt_deg": 0.0,
         "cam_tilt_dir_deg": 0.0,
@@ -107,8 +125,9 @@ def sample_params(rng, randomize):
         "scratch_roughness": 0.7,      # matte inside scratches
         "defects": [],
     }
-    if not randomize:
-        return p
+    if not groups and not defects:  # --no-random: pure base scene
+        return base
+    p = dict(base)
     shift = rng.uniform(-0.08, 0.08)
     p.update({
         "rotation_deg": rng.uniform(0, 360),           # real: random in-plane rotation
@@ -133,6 +152,9 @@ def sample_params(rng, randomize):
         "scratch_roughness": rng.uniform(0.55, 0.85),
         "defects": sample_scratches(rng),
     })
+    for group, keys in RAND_GROUPS.items():
+        if group not in groups:
+            p.update({k: base[k] for k in keys})
     return {k: round(v, 4) if isinstance(v, float) else v for k, v in p.items()}
 
 
@@ -442,6 +464,8 @@ def emission_node(mat):
 
 
 # --- setup --------------------------------------------------------------------
+rand_groups = set() if args.no_random else {g for g in args.rand.split(",") if g}
+assert rand_groups <= RAND_GROUPS.keys(), f"unknown --rand group in {args.rand}"
 out_dir = Path(args.out)
 if list(out_dir.glob("*.hdf5")):
     raise SystemExit(f"{out_dir}/ already has renders. Use a new --out folder "
@@ -516,7 +540,7 @@ t_start = time.time()
 with open(out_dir / "meta.jsonl", "a") as meta_file:
     for i in range(args.n):
         rng = np.random.default_rng([args.seed, i])  # image i is reproducible on its own
-        p = sample_params(rng, randomize=not args.no_random)
+        p = sample_params(rng, groups=rand_groups, defects=not args.no_random)
 
         for part in nut_parts:
             part.set_rotation_euler([0, 0, math.radians(p["rotation_deg"])])
@@ -562,6 +586,7 @@ with open(out_dir / "meta.jsonl", "a") as meta_file:
         bproc.writer.write_hdf5(str(out_dir), data, append_to_existing_output=True)
         meta_file.write(json.dumps({"index": i, "file": f"{i}.hdf5", "seed": args.seed,
                                     "dataset_version": args.version,
+                                    "randomized": sorted(rand_groups),
                                     "n_defects": len(p["defects"]), **p}) + "\n")
         meta_file.flush()
         elapsed = time.time() - t_start

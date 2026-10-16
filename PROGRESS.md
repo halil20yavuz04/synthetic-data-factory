@@ -188,6 +188,38 @@ Compared 350 px close-ups of real vs render (`output/closeup_pair.png`).
 - Known limitation: YOLO polygons have no holes. A scratch that fully surrounds the
   hole would get a label that also covers the hole. Rare; round-trip IoU would show it.
 
-### 14. synth_v1 render (5,000 images)
+### 14. Ablation switches (Week 3 prep)
+- `render/generate.py --rand light,material,camera,background` (default: all on).
+  Groups: light (ring/key light), material (roughness, grain, pits, tint, texture
+  offset), camera (part rotation, tilt, distance), background (color shift).
+  Scratches stay random in every run.
+- Controlled experiment by design: all random values are always drawn in the same
+  order, then switched-off groups are reset to base values. Image i therefore has the
+  same scratch geometry in A0…A3; only the tested group differs. Verified: with all
+  groups on, parameters are identical to the running synth_v1 render; with none on,
+  scratch geometry is identical (only image-space bbox/area change with rotation).
+- meta.jsonl records `randomized` per image.
+
+### 15. Colab training setup (Week 3 prep)
+- `train/synth_v1.yaml` (dataset config) and `train/train_colab.ipynb`: mount Drive,
+  pinned installs (ultralytics 8.3.40, mlflow 2.17.2), unzip data to local disk,
+  1-epoch smoke test on 5% of the data, then YOLOv8n-seg (COCO-pretrained) for 60
+  epochs at 512 px with early stopping. Weights, plots and MLflow logs go to Drive.
+
+### 16. Realism gap found by eye (→ synth_v2)
+- Visual side-by-side (real train/good vs synthetic) showed the synthetic nuts look
+  flat: real images have much stronger light/dark variation ("x-ray look"), bright
+  bent tab rims, directional speckle texture; the synthetic boss edge is a thick
+  bright band that the real nut does not have.
+- The Week 1 metric missed this: "local contrast" only measures fine grain (≤3 px),
+  and that matched. New metrics in `tools/hdf5_to_png.py` (real targets from 20
+  train/good images): mid-scale shading (std of blur 3 px − blur 20 px): real 20.4 vs
+  synthetic 15.4; brightness spread (p95 − p5 inside the nut): real 87.4 vs 56.6.
+- Lesson: a metric that passes is not proof of realism; check by eye too, and when the
+  eye disagrees, find the metric's blind spot.
+- Decision: let synth_v1 finish and train it as the baseline; improve realism in
+  synth_v2 (tuned on train/good + seen_pool only), then compare v1 vs v2.
+
+### 17. synth_v1 render (5,000 images)
 - Started `blenderproc run render/generate.py --n 5000 --seed 0 --out data/synth/synth_v1`.
   Results (DB, stats, YOLO conversion) to be added when it finishes.

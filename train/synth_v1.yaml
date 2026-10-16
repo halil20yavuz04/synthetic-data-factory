@@ -1,0 +1,7 @@
+# YOLOv8-seg dataset config for synth_v1 (Colab paths, see train/train_colab.ipynb).
+# Built by tools/mask_to_yolo.py: 5,000 renders, split train/val by idx % 10.
+path: /content/yolo/synth_v1
+train: images/train
+val: images/val
+names:
+  0: scratch
