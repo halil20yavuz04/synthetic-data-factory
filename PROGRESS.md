@@ -51,8 +51,93 @@ Newest day at the bottom. Plan: 4 weeks (Day 0 → Week 4), see roadmap PDF.
   region outlines.
 - Committed in `95e56bc`.
 
-### Next
-- Week 1: first single nut render in BlenderProc, then camera/light matching the
-  observation table, then `render/generate.py --n 200 --seed 0`.
-- Render budget: 82 s/image is too slow for 5,000 images (~114 h). Lower samples +
-  denoiser.
+### 6. First single nut render (Week 1 start)
+- `render/single_nut.py`: one nut, top-down camera, dark ground plane, soft world light
+  + weak key light from ~10 o'clock, metallic material with the measured greenish tint.
+  Outputs RGB + segmentation mask (nut = category 1) to `output/render_test/0.hdf5`.
+- `tools/hdf5_to_png.py`: converts .hdf5 to `_rgb.png`, `_mask.png` and a
+  `_compare.png` (real train/good image | render | mask), and prints mean colors.
+- Speed: 512 px, 64 samples + Intel denoiser = ~8 s/image (vs 82 s at 1024 samples).
+  5,000 images ≈ 11 h, fits in one night.
+
+### 7. Measured nut outline
+- First render used guessed tab shapes (thin saw teeth). Visual check of the real nut:
+  going clockwise, the long slanted tab edge leads and the short radial edge trails.
+- `tools/nut_profile.py`: measures r(θ) (center → outer edge per 1°) on 20 train/good
+  images, aligns them and folds into one 90° tab period. Plot: `reports/nut_profile.png`,
+  data: `render/nut_profile.json`.
+- Result: gap radius 0.36 D, tip radius 0.50 D; long edge rises over ~35°, flat tip
+  ~47°, short edge drops within ~3° (radial). All 80 tabs (20 images × 4) agree,
+  confirming the visual observation and one fixed handedness.
+- `render/single_nut.py` now builds the outline from this profile, so the synthetic
+  nut has the real shape and the correct handedness (a mirrored nut = "flip" defect).
+
+### 8. Matching brightness, color, texture and lighting
+Each change was checked with numbers printed by `tools/hdf5_to_png.py`
+(nut mean RGB, background RGB, local contrast), against real train/good targets.
+- Color management: switched BlenderProc's default "Filmic" view transform to
+  "Standard", so rendered colors are not bent by a film curve.
+- Background: emissive plane with the exact measured color #17171d. It ignores
+  lights, so no cast shadow (real images show none). Result: (23, 23, 29) exact.
+- Material (`make_metal_material`): procedural noise for fine grain (bump), patchy
+  roughness 0.3–0.5 and sparse dark pits. Nut color fixed: the measured sRGB ratios
+  had been used as linear values; converted to linear (0.77, 1.0, 0.89).
+- Hole chamfer: shallow cone ring (`make_chamfer`) around the hole.
+- New metric "local contrast" = std of (pixel − blurred surroundings) inside the nut,
+  a number for surface grain. Real: 9.2.
+- Lighting finding: with uniform world light, the bump grain was invisible (contrast
+  stuck at 7.6 whatever the grain settings), because every surface direction sees the
+  same light. A light with direction is needed. A top square light gave grain but made
+  slanted edges dark. A ring light (emissive ring 27°–51° from vertical, hidden from
+  the camera) gives grain on flat areas and bright slanted edges, like the real images.
+  Industrial cameras commonly use ring lights, so this is a plausible real setup.
+- Result: nut mean RGB (90, 102, 97) vs real (89, 101, 96); local contrast 10.5 vs 9.2.
+
+### 9. Close-up detail matching (hole bead, boss edge, tab edges, texture)
+Compared 350 px close-ups of real vs render (`output/closeup_pair.png`).
+- Lathe geometry (`make_lathe`): the center is built by rotating an (r, z)
+  cross-section 360°. Hole: convex quarter-circle bead (0.05 D) with its own smoother
+  material, matching the wide grey rounded rim around the real hole.
+- Boss edge: a quarter-ellipse ramp ended vertically and rendered as a dark band.
+  Replaced by a low (0.015 D) S-shaped cosine slope (`smooth_step`, max ~19°), which
+  reflects the ring light → bright ridge like the real nut. Rule learned: with a ring
+  light at 27°–51°, surfaces tilted ~13°–25° glow, steeper ones go dark.
+- Tab edges: bevel 0.02 D (~10 px bright rounded rim). The bevel grew the outline,
+  so the curve is offset inward by 0.7 × bevel (measured; nut width 89.7% vs 89.1%).
+- Texture: real texture is mostly fine dark speckles (color), not bumps. Reduced bump
+  grain, made speckles ~2 px and denser. Too-small speckles (~1 px) vanished in the
+  render. Added faint concentric machining marks (1D noise along the radius).
+- New metric in `tools/hdf5_to_png.py`: nut width (% of image).
+- Result: width 89.7% (real 89.1), nut RGB (89, 102, 96) vs (89, 101, 96),
+  background exact, local contrast 10.7 vs 9.2.
+
+### 10. Randomized generator: 200 images (Week 1 deliverable)
+- `render/single_nut.py` became `render/generate.py`
+  (`blenderproc run render/generate.py --n 200 --seed 0`). One scene is built once,
+  then each image only changes parameters → 1.7 s/image (200 images in ~6 min).
+- Per image (`sample_params`): rotation 0–360°, camera tilt 0–3° (aimed at the nut),
+  distance ±0.5%, ring light ×0.75–1.3, key light angle/elevation/power, roughness,
+  grain, speckle density/darkness, color tint, background ±3 levels, and a texture
+  offset so every nut has a different pit pattern. Ranges follow the real-data spread
+  where measured. `--no-random` renders the base values (used to check that the
+  refactor changed nothing: identical numbers to the old script).
+- Reproducibility: image i uses RNG seed `[seed, i]`. All parameters go to
+  `data/synth/week1/meta.jsonl` (one JSON line per image), input for the Week 2 SQL table.
+- Safety: refuses to write into a folder that already has renders.
+- `tools/hdf5_to_png.py` prints a summary for many files; `tools/make_grid.py` builds
+  `reports/week1_grid.png` (16 evenly spaced images).
+- Distribution check, synthetic (200) vs real train/good (220):
+
+  | | synthetic | real |
+  |---|---|---|
+  | nut width % | 89.9 ± 0.3 | 89.1 ± 0.4 |
+  | nut mean gray | 97.4 ± 8.8 [78.8, 120.1] | 98.5 ± 10.0 [83.5, 121.7] |
+  | local contrast | 10.3 ± 1.4 | ~9.2 |
+
+- Known small offset: synthetic nuts are ~0.8% wider on average. Fix with FILL
+  before the Week 2 dataset render.
+
+### Next (Week 2)
+- Scratch synthesis (texture-based straight strips/fields, separate category_id,
+  region-level masks), 30–40% defect-free images.
+- SQLite metadata (`db/`), `tools/mask_to_yolo.py`, ~5,000-image dataset.
