@@ -1,0 +1,10 @@
+test/scratch/000.png
+test/scratch/002.png
+test/scratch/004.png
+test/scratch/006.png
+test/scratch/010.png
+test/scratch/011.png
+test/scratch/014.png
+test/scratch/018.png
+test/scratch/020.png
+test/scratch/021.png
