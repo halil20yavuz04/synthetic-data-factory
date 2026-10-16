@@ -161,7 +161,33 @@ Compared 350 px close-ups of real vs render (`output/closeup_pair.png`).
 - `tools/hdf5_to_png.py` writes `_defect.png` (scratch mask) and `_overlay.png`;
   `tools/make_grid.py --suffix overlay` shows scratch outlines in the grid.
 
-### Next
-- SQLite metadata (`db/`) + 5 check queries + `reports/data_stats.md`.
-- `tools/mask_to_yolo.py` for synthetic data and the real test set.
-- ~5,000-image dataset render (~3.5 h at 2.6 s/image).
+### 12. Metadata database and data checks
+- `db/schema.sql`: `images` (one row per render: path, seed, idx, split, n_defects,
+  all render parameters) and `defects` (one row per scratch: type, geometry, visible
+  `area_px`, bbox). Two tables because an image can have 0-3 scratches. Columns follow
+  the parameters we actually randomize (adapted from the roadmap schema).
+- `tools/build_db.py`: rebuilds `db/meta.sqlite` from `meta.jsonl` (the source of truth).
+  Split: idx % 10 == 0 → val, else train (parameters are i.i.d. per image, so this is
+  as good as random, and stable).
+- `db/checks.sql`: 5 queries: split balance, defect-free share, scratch area by type,
+  empty/tiny masks, parameter coverage.
+- `tools/data_stats.py`: runs the queries → `reports/data_stats.md` + 2 histograms:
+  scratch area per defective image (synthetic vs the 10 real seen_pool masks) and
+  scratches per image. Area is compared per image, because a real mask holds all
+  scratches of an image in one file.
+
+### 13. YOLO labels
+- `tools/mask_to_yolo.py`: mask → contours (OpenCV `findContours`, outer boundary) →
+  simplified polygons (`approxPolyDP`, 1 px tolerance) → normalized YOLOv8-seg lines
+  `0 x1 y1 x2 y2 ...`. Defect-free images get an empty label file.
+- Self-check: each label is drawn back into a mask and compared with the source mask.
+  Round-trip IoU: synthetic test 0.985 (min 0.971), real seen_pool 0.989 (min 0.977).
+- Real data converted to `data/yolo/real/{seen_pool,locked_test}`: seen_pool 10 images
+  / 18 regions (real masks often have several parts). locked_test 35 images, 22 empty
+  labels (good). For locked_test only totals are printed, nothing per image.
+- Known limitation: YOLO polygons have no holes. A scratch that fully surrounds the
+  hole would get a label that also covers the hole. Rare; round-trip IoU would show it.
+
+### 14. synth_v1 render (5,000 images)
+- Started `blenderproc run render/generate.py --n 5000 --seed 0 --out data/synth/synth_v1`.
+  Results (DB, stats, YOLO conversion) to be added when it finishes.
