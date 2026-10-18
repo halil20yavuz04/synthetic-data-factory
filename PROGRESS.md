@@ -312,3 +312,193 @@ Compared 350 px close-ups of real vs render (`output/closeup_pair.png`).
 ### 17. synth_v1 render (5,000 images)
 - Started `blenderproc run render/generate.py --n 5000 --seed 0 --out data/synth/synth_v1`.
   Results (DB, stats, YOLO conversion) to be added when it finishes.
+
+## 2026-10-17 (first trainings)
+
+### 18. Real-only baseline (5-fold cross-validation)
+- Question: how well does YOLOv8n-seg do with only the 10 real seen_pool scratches?
+  (roadmap row "real only, 10 images"). locked_test is not used.
+- `tools/eval.py`: our own metrics. Per image the predicted masks (conf ≥ 0.25) are
+  merged; any mask → image rejected. Recall (scratch images rejected), false alarm
+  (good images rejected), precision, mask IoU. Refuses to run on locked_test.
+- `train/real_only_cv.py`: 5 folds; each trains on 8 scratch + 40 train/good images
+  (COCO-pretrained, 60 epochs, 512 px, Apple MPS) and tests on the 2 held-out scratches
+  + 50 other train/good images. Every real scratch is tested once by a model that never
+  saw it. Ultralytics installed in the venv (8.3.40, same pin as Colab).
+- Bug found in my own setup: YOLO picks `best.pt` by its val score, and val contained
+  the fold's test images → model selection on the test set (leakage). best.pt: 2/10;
+  last.pt (no selection): 1/10. Script now evaluates last.pt.
+- Result (last.pt): recall 1/10 (10%), false alarms 0/250, mean mask IoU 0.06.
+  The model learned to say "no scratch" almost always (40 good vs 8 scratch images).
+  Folds differ a lot (high variance with 8 training images).
+- This is the bar for synthetic data: it has to find more than 1 of 10 real scratches.
+
+### 19. synth_v1 model on real images (first sim-to-real result)
+- YOLOv8n-seg trained on synth_v1 in Colab (T4). The session dropped at epoch 28/60
+  (laptop lid closed); used `best.pt` from epoch ≤27 (synthetic val mask mAP50 0.95,
+  selected on synthetic val only, so no leakage). Saved as `output/models/synth_v1_best.pt`.
+- Colab fixes: mlflow==2.17.2 had no wheel for Colab's Python 3.13 → install unpinned
+  mlflow, keep ultralytics==8.3.40; new mlflow refuses the folder backend → set
+  `MLFLOW_ALLOW_FILE_STORE=true`.
+- Dev evaluation (same set as the real-only baseline: 10 seen_pool scratches + 50
+  train/good), `reports/synth_v1_dev_eval.json`:
+
+  | model | scratches found | false alarms (50 good) | mean mask IoU |
+  |---|---|---|---|
+  | real only (8 real images, 5-fold CV) | 1/10 | 0/50 | 0.06 |
+  | synthetic v1 (4,500 renders) | 10/10 | 49/50 | 0.09 |
+
+  On all 220 train/good images: 215 false alarms (97.7%).
+- What happens (`output/synth_v1_on_real.png`): the model marks large textured/bright
+  areas (tabs, rims) as scratches, on good and scratched nuts alike; the real scratch
+  is mostly missed (IoU ≈ 0), so "10/10 found" is luck. v1 surfaces were clean, so the
+  model learned "any texture = scratch". Real nuts are full of micro-scratches and
+  iris-like texture → domain gap, exactly the realism issue spotted by eye earlier.
+- A threshold cannot fix it: false alarms on good nuts have higher confidence (up to
+  0.87) than the real scratches (0.27–0.76).
+- Next: train synth_v2 (iris texture, micro-scratches, patchy highlights, visible
+  scratches) and compare on the same dev set; expect far fewer false alarms.
+
+### 20. Good-nut realism rewrite (from an annotated 10-point review)
+- Stopped the first synth_v2 render at 1,757/5,000 (user review: still clearly unreal).
+  Fixed the defect-free nut first; scratches come next.
+- `render/generate.py` good-nut part rewritten (old version kept as
+  `output/generate_before_goodnut_rewrite.py`); scratch shapes/masks unchanged.
+  1. Texture in COLOR, not relief: dark mottled base (noise × Voronoi), light wavy,
+     broken radial "iris" streaks with varying opacity, light dots, sparse gold specks.
+     Bump nearly zero (0.03). First try had streaks so dense that the dark gaps read
+     as dark lines on a light base (inverted); thinner streaks fixed it.
+  2. Countersink: same zinc material and texture, darker towards the hole, concentric
+     machining marks; lip + rim fillets give two thin bright rings; 25° cone (45° was
+     far too dark: 22-36 gray vs real 67-72).
+  3. Wide boss slope replaced by a thin shallow groove; the center disk fades into the
+     body over ~3° (a short step showed as a ring line).
+  4. Fragmented highlights: two broad waviness layers, 4 small random lamps, roughness
+     0.32-0.55, narrower lamp power range (no saturated bands, item 7).
+  5. Real prong bend: body is voxel-remeshed (dense even mesh), prong tips bent down
+     (0.035 D, from r = 0.40); real camera depth of field (f-stop 0.3-0.7, focus on the
+     flange). The fake 2D edge blur is gone. Outline/mask unchanged (bend is z only).
+  6. Outline corners rounded (2° circular smoothing) + tiny fixed edge irregularity.
+  8. Warm zinc: yellow-green base, gold specks; per-image white balance.
+  9. Sensor post-processing: slight blur, chromatic aberration (R/B radial scale),
+     read + shot noise per channel (color noise). Masks untouched.
+- Good-only test (8 renders): mean RGB 90/101/88 (real 89/101/96), fine 9.9 (9.2),
+  mid 17.8 (20.4), spread 111 (87); radial profile now follows the real one
+  (countersink 61-91 vs 67-72, rim ~100, flange ~100-110 vs 70-79, tabs 81-84 vs 74-81).
+- Second review round (annotated): texture = SHORT strokes and dots whose orientation
+  is only radial from afar, hard x-ray-like light/dark transitions; 3 subtle
+  slide-like concentric steps on the prongs; a gray-white slope down at the short
+  radial prong edge; a thin sloped rim along the whole outline.
+  - Strokes: noise at (direction × K, radius × L) with K ≈ L (short blobs), both tails
+    thresholded → bright and dark strokes; continuous contour lines removed.
+  - Geometry by vertex displacement on the dense body mesh: prong steps at
+    r = 0.37 / 0.415 / 0.455 D; rim slope via distance to the outline (kd-tree),
+    wider (0.035 D) where the outline runs radially (short prong edge).
+  - Bugs fixed on the way: distance to the 360 sparse outline points gave a beaded,
+    serrated rim (now a densified outline, 8 points per segment); first steps were
+    too deep (bright terraces), halved and widened.
+  - Result (8 good renders): mean RGB 88/99/86 (real 89/101/96), fine 10.9 (9.2),
+    mid 17.6 (20.4), spread 118 (87).
+- Third review round (annotated): countersink must NOT carry the flange texture but a
+  smooth ring sequence (rim inwards: white → darker → white → short dark → hole);
+  light comes from several directions and varies much more; the outline and the short
+  prong-edge slopes look bright, whitish and soft in real images (ours were dark).
+  - Countersink: own smooth semi-metallic material, radius-driven gray ramp with the
+    annotated ring order (first try too bright: a glowing donut; values halved).
+  - Rim: `make_body` stores a per-vertex "rim" attribute (1 at the outline, wider at
+    the short prong edges); the material reads it and makes the rim whitish and rough,
+    independent of the light angle. Plus a low "grazing" ring light (~6° elevation)
+    that catches outward slopes.
+  - 6 smaller lamps with a wider power range, stronger waviness, larger dark spots.
+  - Result (8 good renders): mean RGB 99/112/98 (real 89/101/96, real range of mean gray
+    84-122), fine 11.7, mid 17.3, spread 105; countersink 64-121 (real 67-99).
+- Fourth review round: real looks a bit bluer (ours too dark-green), the countersink has
+  dark blue and more color variation, the short prong-edge slope is much wider and
+  softer, and details overall are too crisp.
+  - Base color bluer (0.74, 1.0, 0.86); dark strokes/spots now MIX to a bluish dark
+    gray instead of a darker green.
+  - Countersink ramp in RGB with dark-blue bands + a low-frequency hue variation.
+  - Short prong-edge slope 0.035 → 0.07 D wide, softer rim glow falloff.
+  - Lens blur σ 0.2-0.8 → 0.7-1.4 px.
+  - Result: mean RGB 101/112/105, fine grain 9.0 (real 9.2), mid 17.5, spread 100.
+- Fifth review round: countersink too smooth and a perfect circle; its blue much bluer,
+  outer white part slightly turquoise; more iris texture, like many PAINTED scratches on
+  a smoother glossy surface (no effect on lighting); short prong-edge slope even bigger.
+  - Countersink: lathe "wobble" (low-frequency radius irregularity on the hole side,
+    fading to 0 where it meets the body), ring positions warped by noise, deeper blue
+    and turquoise ramp, stronger fine grain.
+  - Strokes: a third, finer layer and a lower threshold (denser); micro-normal 0
+    (texture purely in color); roughness 0.26-0.46 (glossier base).
+  - Short prong-edge slope 0.11 D wide, softer rim falloff.
+  - Result: mean RGB 98/109/104, fine 12.4 (9.2), mid 22.2 (20.4), spread 125 (87).
+- Sixth review round: "blue" in the countersink meant the dark navy-black of the
+  background (misread as saturated blue); bright outer countersink edge with a softer
+  transition into the flange (that zone always shines); highlights too bright and too
+  widespread, they should be sparse and mostly on protruding tips, not whole slopes.
+  - Countersink ramp: background-dark bands, turquoise-gray light bands, bright outer
+    edge; wider rounded rim (0.022 D); the flange brightens near the countersink edge
+    and fades out over 0.025 D.
+  - Highlights: rim glow 0.75 → 0.45 and squared falloff (only the very edge), grazing
+    light 0.35 → 0.15, lamps 4.2 → 3.2 W, roughness 0.3-0.5, ring fill 0.2.
+  - Result: mean RGB 93/102/97 (real 89/101/96, closest so far), fine 11.0, mid 18.6,
+    spread 105 (87).
+- Range tuning from a user rating of 16 random renders (good: 1, 7; bad: 0, 2, 5 "too
+  gray, exaggerated highlights, too wavy and scattered texture"). Compared all logged
+  parameters of good vs bad (meta.jsonl): biggest differences were waviness (bad
+  1.26-1.37 vs good 0.84-0.96, +2.5 sd), lamp elevation (52-57° vs ~47°), denser
+  strokes, grayish/bluish white balance, glossier surface. These match the stated
+  reasons, so their ranges were narrowed towards the good ones (wave 0.7-1.05, lamp
+  elevation 35-52°, stroke threshold 0.6-0.65, WB ±0.015 with slight green bias,
+  roughness shift -0.02..+0.06). Differences without a plausible visual effect (camera
+  tilt, chromatic aberration, background shift) were treated as chance and not changed
+  (16 samples, ~30 parameters: correlation ≠ cause).
+- Same seed re-rendered: the silver, blown-out, scattered look is mostly gone.
+
+## 2026-10-18 (scratch rewrite)
+
+### 21. Scratches drawn stroke by stroke
+- Review (user + me, same list): real field scratches are separate, distinct, long thin
+  strokes (dark brown, some bright), slightly curved, different lengths, crossing; ours
+  were a uniform dark patch inside a rectangle. Real regions are irregular, ours were
+  sharp rectangles; real bands are opaque flat gray-brown, ours translucent/pinkish;
+  real masks follow the scratch shape, ours were rectangles.
+- New system (`render/generate.py`, old version in `output/generate_before_stroke_scratches.py`):
+  - Each image draws its scratches in NumPy into a 1024² texture in nut-local
+    coordinates (R = amount, G = tone): fields = 15-60 anti-aliased strokes around a
+    common direction (±6° jitter, slight curvature, 30-100% length, 25% bright);
+    bands = one opaque strip with ±18% width noise (rough edges), curved axis, a few
+    inner streaks. The shader mixes the surface to a tone-ramp color (dark brown /
+    gray-brown / bright) by the amount.
+  - Mask from the same strokes: per scratch, threshold → morphological closing (fills
+    the gaps between strokes, like the coarse real masks) → small dilation, mapped into
+    the image with the plane homography of the projected texture square. Countersink
+    pixels (category 3 during rendering, merged into 1) are excluded: no texture there.
+  - Bug found: Cycles caches an image texture after the first render and ignores later
+    pixel edits (minimal test: 0.8 → 0.3 rendered unchanged). Since image 0 had no
+    scratch, every scratch was invisible. Fix: a new Blender image every frame.
+- Review: scratches still too dark and look painted ("drawn with a dark gray brush");
+  real ones are lighter gray and look deep.
+  - Colors moved from dark brown to light matte steel grays.
+  - Depth: the scratch texture gets a height channel (B = amount blurred by 1.5 px for
+    fields, 3 px for bands) driving an inverted bump after the micro-normal; groove
+    walls now catch the light on one side and shade the other (depth randomized
+    0.6-1.4). On the good surface the texture stays color-only; only scratches change
+    the shading.
+- Review: fields should sometimes show light-gray damage haze around and between the
+  strokes; bands must look like material removed (the flange rings still showed through,
+  "like a black-and-white filter"), lighter, with sharper edges and pointed ends.
+  - Fields: per-scratch haze level none/mild/strong; haze = light-gray low-opacity layer
+    inside the closed stroke region (noise-broken) + up to 150 faint shallow
+    micro-scratches.
+  - Bands: texture alpha = "flat" mask; the shader blends the surface normal towards
+    straight up there, so rings, steps and waviness vanish inside the band (ground
+    flat). Matte interior (roughness 0.8: the flat glossy band mirrored the dark
+    surroundings and looked black), lighter gray with fine sanding grain. Width tapers
+    to a point at both ends (4-15% of length), jagged ±25% width noise, sharper walls.
+- Review: fields very good; bands too flat and single-colored. User measured real band
+  pixels: darker parts (often near one edge) sRGB 70-85, lighter parts 85-105.
+  - Band tone now varies per pixel (`band_tone`): one edge darker (random side), fine
+    streaks along the band (grinding marks), broad blotches; mapped to tone 0.35-0.65.
+  - Ramp stops calibrated with `output/band_stats.py` (sRGB inside band masks): before
+    dark half 91-96 / light half 118-121; after dark 75-79 / light 97-101 (targets
+    70-85 / 85-105).
