@@ -5,7 +5,7 @@ be tuned on these results. Requires an explicit flag so it cannot run by acciden
 
     python tools/final_eval.py --model output/models/final_v2_ft_replay.pt --threshold 0.59 \
         --i-confirm-final-evaluation
-Output: reports/final_locked_test.json, reports/final_locked_test.png
+Output: reports/results/final_locked_test.json, reports/results/final_locked_test.png
 """
 import argparse
 import json
@@ -38,7 +38,7 @@ for r in rows:
         print("error:", r["image"], "scratch" if r["has_scratch"] else "good",
               "conf", r["best_conf"])
 
-Path("reports/final_locked_test.json").write_text(json.dumps(
+Path("reports/results/final_locked_test.json").write_text(json.dumps(
     {"model": args.model, "threshold": args.threshold, "summary": summary, "images": rows},
     indent=1))
 
@@ -59,5 +59,5 @@ for img_p, lab_p in samples:
 while len(tiles) % 7:
     tiles.append(np.zeros_like(tiles[0]))
 grid = np.vstack([np.hstack(tiles[i:i + 7]) for i in range(0, len(tiles), 7)])
-cv2.imwrite("reports/final_locked_test.png", grid)
-print("wrote reports/final_locked_test.json and reports/final_locked_test.png")
+cv2.imwrite("reports/results/final_locked_test.png", grid)
+print("wrote reports/results/final_locked_test.json and reports/results/final_locked_test.png")

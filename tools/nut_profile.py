@@ -5,7 +5,7 @@ Profiles of 20 images are rotation-aligned and folded into one 90° period
 (4 identical tabs), giving a measured tab shape for the renderer.
 
 Outputs:
-  reports/nut_profile.png   per-image aligned profiles + mean tab profile
+  reports/analysis/nut_profile.png   per-image aligned profiles + mean tab profile
   render/nut_profile.json   mean profile of one tab period, r / D (D = 2 * max r)
 Angles: 0° = right, counter-clockwise positive (same as tools/light_direction.py).
 """
@@ -91,7 +91,7 @@ ax.set_ylabel("r / D")
 ax.set_title(f"Nut outline, polar profile ({len(paths)} train/good images x 4 tabs)")
 ax.legend()
 fig.tight_layout()
-fig.savefig("reports/nut_profile.png", dpi=150)
+fig.savefig("reports/analysis/nut_profile.png", dpi=150)
 
 Path("render/nut_profile.json").write_text(json.dumps({
     "source": f"tools/nut_profile.py, {len(paths)} train/good images",
@@ -99,4 +99,4 @@ Path("render/nut_profile.json").write_text(json.dumps({
     "angle_step_deg": 360 / N_BINS,
     "r_over_D": [round(float(v), 4) for v in tab_norm],
 }, indent=1))
-print("wrote reports/nut_profile.png and render/nut_profile.json")
+print("wrote reports/analysis/nut_profile.png and render/nut_profile.json")

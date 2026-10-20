@@ -1,7 +1,7 @@
 """Tile rendered images into one grid PNG for a quick visual check.
 
 Usage (repo root, venv active, after tools/hdf5_to_png.py):
-    python tools/make_grid.py data/synth/week1 reports/week1_grid.png
+    python tools/make_grid.py data/synth/week1 reports/analysis/week1_grid.png
 Takes N evenly spaced *_rgb.png from the folder (default 16 -> 4x4 grid),
 labels each tile with its image index.
 """

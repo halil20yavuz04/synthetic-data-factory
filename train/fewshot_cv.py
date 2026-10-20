@@ -14,8 +14,7 @@ Run from the repo root (venv active, after tools/mask_to_yolo.py real):
     python train/fewshot_cv.py --name v2_ft_replay --init output/models/synth_v2_best.pt \
         --epochs 30 --lr0 0.001 --synth data/yolo/synth_v2 --n-synth 300
     python train/fewshot_cv.py --name real_only --smoke   # 1 fold, 2 epochs: pipeline check
-Output: output/cv_<name>/ (datasets, runs), reports/cv_<name>.json
-(the first real-only run wrote reports/real_only_cv.json)
+Output: output/cv_<name>/ (datasets, runs), reports/results/cv_<name>.json
 """
 import argparse
 import json
@@ -123,8 +122,8 @@ total = summarize(all_rows)
 # goods are evaluated once per fold -> false alarm = average over folds
 print(f"\n{args.name} (5-fold CV over the 10 seen_pool scratches):")
 print(json.dumps(total, indent=1))
-Path("reports").mkdir(exist_ok=True)
-out_json = Path(f"reports/cv_{args.name}{'_smoke' if args.smoke else ''}.json")
+Path("reports/results").mkdir(parents=True, exist_ok=True)
+out_json = Path(f"reports/results/cv_{args.name}{'_smoke' if args.smoke else ''}.json")
 out_json.write_text(json.dumps({"total": total, "per_fold": per_fold, "images": all_rows,
                                 "epochs": epochs, "weights": "last.pt", "init": args.init,
                                 "lr0": args.lr0, "n_synth": args.n_synth}, indent=1))

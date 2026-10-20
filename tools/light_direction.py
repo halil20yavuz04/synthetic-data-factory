@@ -2,7 +2,7 @@
 The ring is rotationally symmetric, so angular variation there comes from lighting.
 
 Uses train/good only (leakage-safe). Outputs:
-  reports/light_direction.png        angular brightness profiles
+  reports/analysis/light_direction.png        angular brightness profiles
   output/light_direction_check.png   sanity check: ring drawn on one image
 """
 import glob
@@ -82,10 +82,10 @@ ax.set_ylabel("mean ring brightness")
 ax.set_title(f"Ring brightness vs angle, {len(paths)} train/good images")
 ax.legend()
 fig.tight_layout()
-Path("reports").mkdir(exist_ok=True)
-fig.savefig("reports/light_direction.png", dpi=150)
+Path("reports/analysis").mkdir(parents=True, exist_ok=True)
+fig.savefig("reports/analysis/light_direction.png", dpi=150)
 
 spread = np.ptp(mean) / mean.mean() * 100
 print(f"\nmean peak: {peak:.0f}° (~{clock(peak)} o'clock), "
       f"brightness range across angles: {spread:.1f}% of mean")
-print("wrote reports/light_direction.png and output/light_direction_check.png")
+print("wrote reports/analysis/light_direction.png and output/light_direction_check.png")

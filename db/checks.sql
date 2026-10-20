@@ -1,5 +1,5 @@
 -- Sanity-check queries on db/meta.sqlite. tools/data_stats.py runs each block
--- (split on "-- name:") and writes the results to reports/data_stats.md.
+-- (split on "-- name:") and writes the results to reports/analysis/data_stats.md.
 
 -- name: 1. Split balance
 -- Are train and val similar? Same defect-free share and same scratches per image.

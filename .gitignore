@@ -1,9 +1,15 @@
+# environments and caches
 .venv/
-data/
 __pycache__/
-*.hdf5
+.pytest_cache/
 .DS_Store
+# large or regenerable artifacts (MVTec data is not redistributed here)
+data/
+output/
 runs/
 mlruns/
-output/
+*.hdf5
+*.sqlite
+*.pt
+# local assistant notes
 CLAUDE.md

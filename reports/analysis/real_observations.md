@@ -5,7 +5,7 @@ image was opened. Tools:
 - `tools/make_contact_sheet.py`: 20 random train/good (seed 0) + 10 seen_pool scratch
   with mask contours, plus scratch size stats.
 - `tools/light_direction.py`: ring-brightness vs angle on the first 20 train/good images
-  (`reports/light_direction.png`).
+  (`reports/analysis/light_direction.png`).
 
 Labels: **[measured]** = computed from pixels, **[visual]** = eyeballed on contact sheets.
 
@@ -108,6 +108,6 @@ Other properties **[visual]**:
 
 ## Open questions
 - Light elevation: not measured. Could be estimated later by comparing renders at
-  different key-light heights against `reports/light_direction.png`.
+  different key-light heights against `reports/analysis/light_direction.png`.
 - Seen_pool has only 10 scratch images, so the size ranges above are rough. Randomize
   slightly beyond them rather than matching them exactly.

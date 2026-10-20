@@ -8,7 +8,7 @@ were never in its training set. Expected cost per part at threshold t:
 
 Usage (repo root, venv active):
     python tools/cost_threshold.py --name v2_ft_replay
-Output: reports/threshold_<name>.json and reports/threshold_<name>.png
+Output: reports/results/threshold_<name>.json and reports/results/threshold_<name>.png
 """
 import argparse
 import json
@@ -76,9 +76,9 @@ ax.legend(frameon=False)
 for side in ("top", "right"):
     ax.spines[side].set_visible(False)
 fig.tight_layout()
-fig.savefig(f"reports/threshold_{args.name}.png", dpi=150)
+fig.savefig(f"reports/results/threshold_{args.name}.png", dpi=150)
 result["chosen"] = result["scenarios"][MAIN]
-Path(f"reports/threshold_{args.name}.json").write_text(json.dumps(result, indent=1))
+Path(f"reports/results/threshold_{args.name}.json").write_text(json.dumps(result, indent=1))
 print(json.dumps({k: v for k, v in result.items() if k != "scratch_scores"}, indent=1))
 print("scratch scores (out-of-fold):", sorted(result["scratch_scores"]))
 print("good scores: max", neg.max().round(3), "| 99th pct", np.percentile(neg, 99).round(3))

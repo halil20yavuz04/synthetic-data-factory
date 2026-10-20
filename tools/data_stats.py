@@ -1,4 +1,4 @@
-"""Run db/checks.sql on the metadata database and write reports/data_stats.md
+"""Run db/checks.sql on the metadata database and write reports/analysis/data_stats.md
 with the query results and two histograms.
 
 Usage (repo root, venv active, after tools/build_db.py):
@@ -24,7 +24,7 @@ INK, INK_2, SURFACE = "#0b0b0b", "#52514e", "#fcfcfb"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--db", type=Path, default=Path("db/meta.sqlite"))
-parser.add_argument("--out", type=Path, default=Path("reports/data_stats.md"))
+parser.add_argument("--out", type=Path, default=Path("reports/analysis/data_stats.md"))
 args = parser.parse_args()
 con = sqlite3.connect(args.db)
 

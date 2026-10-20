@@ -35,7 +35,7 @@ Newest day at the bottom. Plan: 4 weeks (Day 0 → Week 4), see roadmap PDF.
 
 ### 4. Light direction measurement
 - `tools/light_direction.py` measures brightness around the flat center ring vs angle
-  on 20 train/good images. Plot: `reports/light_direction.png`.
+  on 20 train/good images. Plot: `reports/analysis/light_direction.png`.
 - Result: light comes from ~10 o'clock (upper-left) and is fixed relative to the camera.
   The effect is weak (16% brightness range), so the lighting is mostly soft and even.
   Overall brightness varies a lot between images (~50–115) → randomize light power.
@@ -43,7 +43,7 @@ Newest day at the bottom. Plan: 4 weeks (Day 0 → Week 4), see roadmap PDF.
   scale), hole/outer ratio 0.246, background #17171d.
 
 ### 5. Real image observations
-- `reports/real_observations.md`: camera, background, lighting, nut shape and scratch
+- `reports/analysis/real_observations.md`: camera, background, lighting, nut shape and scratch
   observations, each labeled [measured] or [visual]. The summary table at the top lists
   the render targets for Week 1.
 - Key findings: 4 hooked tabs with fixed handedness (a mirrored nut = "flip" defect);
@@ -64,7 +64,7 @@ Newest day at the bottom. Plan: 4 weeks (Day 0 → Week 4), see roadmap PDF.
 - First render used guessed tab shapes (thin saw teeth). Visual check of the real nut:
   going clockwise, the long slanted tab edge leads and the short radial edge trails.
 - `tools/nut_profile.py`: measures r(θ) (center → outer edge per 1°) on 20 train/good
-  images, aligns them and folds into one 90° tab period. Plot: `reports/nut_profile.png`,
+  images, aligns them and folds into one 90° tab period. Plot: `reports/analysis/nut_profile.png`,
   data: `render/nut_profile.json`.
 - Result: gap radius 0.36 D, tip radius 0.50 D; long edge rises over ~35°, flat tip
   ~47°, short edge drops within ~3° (radial). All 80 tabs (20 images × 4) agree,
@@ -125,7 +125,7 @@ Compared 350 px close-ups of real vs render (`output/closeup_pair.png`).
   `data/synth/week1/meta.jsonl` (one JSON line per image), input for the Week 2 SQL table.
 - Safety: refuses to write into a folder that already has renders.
 - `tools/hdf5_to_png.py` prints a summary for many files; `tools/make_grid.py` builds
-  `reports/week1_grid.png` (16 evenly spaced images).
+  `reports/analysis/week1_grid.png` (16 evenly spaced images).
 - Distribution check, synthetic (200) vs real train/good (220):
 
   | | synthetic | real |
@@ -141,7 +141,7 @@ Compared 350 px close-ups of real vs render (`output/closeup_pair.png`).
 
 ### 11. Scratch synthesis
 - Each scratch is a rotated rectangle on the nut (center, angle, length, width in D),
-  following `reports/real_observations.md`: two types, "field" (many fine parallel
+  following `reports/analysis/real_observations.md`: two types, "field" (many fine parallel
   hairlines, 70%) and "band" (wide uniform matte strip, 30%), straight, anywhere on
   the nut. 35% of images have no scratch; otherwise 1/2/3 scratches with p = 0.7/0.2/0.1.
 - Appearance (shader, `add_scratch_nodes`): inside the rectangle the color is
@@ -171,7 +171,7 @@ Compared 350 px close-ups of real vs render (`output/closeup_pair.png`).
   as good as random, and stable).
 - `db/checks.sql`: 5 queries: split balance, defect-free share, scratch area by type,
   empty/tiny masks, parameter coverage.
-- `tools/data_stats.py`: runs the queries → `reports/data_stats.md` + 2 histograms:
+- `tools/data_stats.py`: runs the queries → `reports/analysis/data_stats.md` + 2 histograms:
   scratch area per defective image (synthetic vs the 10 real seen_pool masks) and
   scratches per image. Area is compared per image, because a real mask holds all
   scratches of an image in one file.
@@ -341,7 +341,7 @@ Compared 350 px close-ups of real vs render (`output/closeup_pair.png`).
   mlflow, keep ultralytics==8.3.40; new mlflow refuses the folder backend → set
   `MLFLOW_ALLOW_FILE_STORE=true`.
 - Dev evaluation (same set as the real-only baseline: 10 seen_pool scratches + 50
-  train/good), `reports/synth_v1_dev_eval.json`:
+  train/good), `reports/results/synth_v1_dev_eval.json`:
 
   | model | scratches found | false alarms (50 good) | mean mask IoU |
   |---|---|---|---|
@@ -521,7 +521,7 @@ Compared 350 px close-ups of real vs render (`output/closeup_pair.png`).
   progress; at normal speed ~2.3 s/image. caffeinate does not stop lid-close sleep.
 - `tools/build_db.py` made version-tolerant: v1-only columns are NULL for v2, and every
   image's full parameter set is stored in `params_json`. DB: `db/meta_v2.sqlite`
-  (5,000 images, 4,600 scratches). Stats: `reports/data_stats_v2.md` (34.5% defect-free,
+  (5,000 images, 4,600 scratches). Stats: `reports/analysis/data_stats_v2.md` (34.5% defect-free,
   no empty/tiny masks).
 - YOLO dataset `data/yolo/synth_v2` (4,500 train / 500 val), round-trip IoU val mean
   0.988 (min 0.903). Zip 2.1 GB for Colab.
@@ -533,8 +533,8 @@ Compared 350 px close-ups of real vs render (`output/closeup_pair.png`).
 ### 23. synth_v2 vs synth_v1 vs real-only
 - YOLOv8n-seg trained on synth_v2 in Colab, full 60 epochs (same settings as v1).
   Synthetic val mask mAP50 0.900 (v1: 0.95; v2 images are harder). Weights
-  `output/models/synth_v2_best.pt`, curve `reports/train/synth_v2_results.csv`,
-  eval `reports/synth_v2_dev_eval.json`.
+  `output/models/synth_v2_best.pt`, curve `reports/results/synth_v2_training_curve.csv`,
+  eval `reports/results/synth_v2_dev_eval.json`.
 - Dev set (10 seen_pool scratches + 50 train/good), conf 0.25:
 
   | model | scratches found | false alarms (50 good) | mean mask IoU on scratches |
@@ -560,7 +560,7 @@ Compared 350 px close-ups of real vs render (`output/closeup_pair.png`).
   and test images (2 held-out scratches + 50 good) identical for every variant;
   evaluated with last.pt; hyperparameters fixed before running (30 epochs, AdamW,
   lr0 0.001), nothing tuned on the folds.
-- Results (`reports/cv_*.json`, conf 0.25):
+- Results (`reports/results/cv_*.json`, conf 0.25):
 
   | variant | init | train data | found | false alarms | mean IoU |
   |---|---|---|---|---|---|
@@ -587,7 +587,7 @@ Compared 350 px close-ups of real vs render (`output/closeup_pair.png`).
   threshold range.
 - Out-of-fold scratch scores 0.64-0.90; good scores max 0.53 (99th percentile 0.10):
   perfectly separated on the dev data, zero cost for t in 0.54-0.64 in all scenarios.
-  Chosen t = 0.59 (`reports/threshold_v2_ft_replay.json/.png`).
+  Chosen t = 0.59 (`reports/results/threshold_v2_ft_replay.json/.png`).
 - Caveat: with only 10 scratches the cost ratio cannot change the choice here (no errors
   to trade off); the margin to the weakest scratch (0.64) is small.
 
@@ -601,10 +601,41 @@ Compared 350 px close-ups of real vs render (`output/closeup_pair.png`).
 - `tools/final_eval.py` (needs `--i-confirm-final-evaluation`), model
   `output/models/final_v2_ft_replay.pt`, threshold 0.59, both fixed beforehand.
   First and only look at `splits/locked_test.txt` (13 scratch + 22 good).
-- Result (`reports/final_locked_test.json`, `reports/final_locked_test.png`):
+- Result (`reports/results/final_locked_test.json`, `reports/results/final_locked_test.png`):
   **12/13 scratches found (recall 92.3%), 0/22 false alarms (precision 100%),
   mean mask IoU 0.63.**
 - Error analysis (after the fact, no changes made): the missed scratch_001 scores 0.565,
   just below the threshold (inside the 0.54-0.64 zero-cost range on dev). Some multi-part
   scratches are only partly outlined (e.g. scratch_007: 1 of 3 regions).
 - Reported as is. Threshold and model stay unchanged; the locked test is now "seen".
+
+### 28. Serving: ONNX + FastAPI + Docker
+- `tools/export_onnx.py`: final model → ONNX (opset 17, fixed 1×3×512×512, 13 MB),
+  copied to `serve/model.onnx`. torch 2.14's new dynamo exporter needed extra packages
+  (onnxscript, onnx_ir); routed Ultralytics' call to the classic exporter (`dynamo=False`).
+- `serve/inference.py`: inference with ONNX Runtime + NumPy only (letterbox, confidence
+  filter, NMS, mask = sigmoid(coefs @ prototypes) cropped to the box, back to original
+  size). No PyTorch/Ultralytics in the container.
+- `tools/check_onnx_parity.py` vs the PyTorch model on 10 seen_pool + 30 good images:
+  same decision 40/40, best-score difference ≤ 0.0005, mask IoU mean 0.97 (min 0.95),
+  ~42 ms per image on the Mac CPU.
+- `serve/app.py` (FastAPI): `GET /health`, `POST /predict` (accept/reject, best score,
+  regions with boxes and areas, scratch area %), `POST /predict/overlay` (PNG with red
+  outlines). Threshold 0.59 via `SCRATCH_THRESHOLD`. `serve/test_app.py`: 5 pytest tests
+  pass (scratch rejected, good accepted, PNG overlay, bad upload → 400).
+- `serve/Dockerfile` (python:3.10-slim, pinned `serve/requirements.txt`): image 583 MB;
+  container tested with curl: seen_pool 021 → reject (score 0.91), good 000 → accept.
+
+## 2026-10-21 (GitHub showcase)
+
+### 29. Repo cleanup, figures, README
+- `tools/make_figures.py` → `reports/figures/01-07` (real vs synthetic, free labels,
+  scratch types, realism v1→v2, domain gap per model, results bars, locked test examples).
+- `reports/` split into `figures/`, `analysis/` (measurements, data stats) and `results/`
+  (CV, dev evals, threshold, locked test); code paths updated. Removed smoke-test JSONs,
+  `.gitkeep`s, `train/synth_v1.yaml`, tracked SQLite DB (now gitignored with `*.pt`).
+- `output/` cleaned from 1.9 GB to 263 MB: kept models, logs and CV fold weights (needed by
+  `tools/cost_threshold.py`); deleted tuning renders, comparison images and temp scripts.
+  Deleted the Colab zips (3.6 GB, regenerable).
+- `README.md` (results, pipeline diagram, method, lessons, reproduce commands, license) and
+  a pinned root `requirements.txt`.

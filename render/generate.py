@@ -2,7 +2,7 @@ import blenderproc as bproc  # must be the very first line (BlenderProc checks t
 # Render N randomized metal nuts with synthetic scratches, top-down,
 # RGB + segmentation mask (0 = background, 1 = nut, 2 = scratch).
 #
-# Base scene values come from reports/real_observations.md and side-by-side checks
+# Base scene values come from reports/analysis/real_observations.md and side-by-side checks
 # against real train/good images (PROGRESS.md); random ranges are listed in
 # sample_params(). Every image's parameters go to meta.jsonl.
 #
@@ -135,7 +135,7 @@ KEY_ANGLE = 150                    # deg, ~10 o'clock in the image [measured]
 KEY_ELEVATION = 30
 KEY_ENERGY = 12.0
 
-# --- scratches (reports/real_observations.md, 10 seen_pool images) -----------
+# --- scratches (reports/analysis/real_observations.md, 10 seen_pool images) -----------
 # Each scratch = a rotated rectangle on the nut surface. Inside it the surface color is
 # replaced by scratch color.
 # v2 rewrite: scratches are drawn stroke by stroke into a texture in nut-local
