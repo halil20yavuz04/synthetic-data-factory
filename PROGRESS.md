@@ -639,3 +639,4 @@ Compared 350 px close-ups of real vs render (`output/closeup_pair.png`).
   Deleted the Colab zips (3.6 GB, regenerable).
 - `README.md` (results, pipeline diagram, method, lessons, reproduce commands, license) and
   a pinned root `requirements.txt`.
+- MIT `LICENSE` added; `learn/` removed from the repo (kept locally, gitignored).

@@ -13,3 +13,5 @@ mlruns/
 *.pt
 # local assistant notes
 CLAUDE.md
+# personal learning scripts (kept locally, not part of the showcase)
+learn/

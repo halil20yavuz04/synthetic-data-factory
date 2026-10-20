@@ -188,7 +188,6 @@ serve/       FastAPI app, ONNX inference, Dockerfile, tests, model.onnx
 db/          SQLite schema + data-check queries
 splits/      seen_pool.txt (10 scratches) and locked_test.txt (13 scratch + 22 good)
 reports/     figures/ (this README), analysis/ (measurements, data stats), results/ (all metrics)
-learn/       two small teaching scripts (PyTorch basics, a tiny CNN vs kNN)
 PROGRESS.md  day-by-day log of every step, decision and number
 ```
 
@@ -216,6 +215,7 @@ python tools/export_onnx.py && python tools/make_figures.py
 
 ## Data and license
 
+Code: [MIT](LICENSE).
 Real images: [MVTec AD](https://www.mvtec.com/company/research/datasets/mvtec-ad)
 (`metal_nut`), licensed CC BY-NC-SA 4.0. The dataset is not included in this repository;
 the figures show a few MVTec images for illustration only.
