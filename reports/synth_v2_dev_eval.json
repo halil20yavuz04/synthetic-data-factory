@@ -1,0 +1,448 @@
+{
+ "seen_pool_plus_50_good": {
+  "scratch_images": 10,
+  "good_images": 50,
+  "tp": 10,
+  "fn": 0,
+  "fp": 39,
+  "tn": 11,
+  "recall": 1.0,
+  "false_alarm": 0.78,
+  "precision": 0.204,
+  "mask_iou": 0.53
+ },
+ "images": [
+  {
+   "image": "scratch_018.png",
+   "has_scratch": true,
+   "rejected": true,
+   "best_conf": 0.732,
+   "iou": 0.559
+  },
+  {
+   "image": "scratch_020.png",
+   "has_scratch": true,
+   "rejected": true,
+   "best_conf": 0.672,
+   "iou": 0.663
+  },
+  {
+   "image": "scratch_002.png",
+   "has_scratch": true,
+   "rejected": true,
+   "best_conf": 0.856,
+   "iou": 0.738
+  },
+  {
+   "image": "scratch_011.png",
+   "has_scratch": true,
+   "rejected": true,
+   "best_conf": 0.883,
+   "iou": 0.409
+  },
+  {
+   "image": "scratch_006.png",
+   "has_scratch": true,
+   "rejected": true,
+   "best_conf": 0.884,
+   "iou": 0.269
+  },
+  {
+   "image": "scratch_010.png",
+   "has_scratch": true,
+   "rejected": true,
+   "best_conf": 0.781,
+   "iou": 0.675
+  },
+  {
+   "image": "scratch_004.png",
+   "has_scratch": true,
+   "rejected": true,
+   "best_conf": 0.755,
+   "iou": 0.515
+  },
+  {
+   "image": "scratch_000.png",
+   "has_scratch": true,
+   "rejected": true,
+   "best_conf": 0.824,
+   "iou": 0.219
+  },
+  {
+   "image": "scratch_021.png",
+   "has_scratch": true,
+   "rejected": true,
+   "best_conf": 0.826,
+   "iou": 0.872
+  },
+  {
+   "image": "scratch_014.png",
+   "has_scratch": true,
+   "rejected": true,
+   "best_conf": 0.733,
+   "iou": 0.378
+  },
+  {
+   "image": "067.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.33,
+   "iou": null
+  },
+  {
+   "image": "029.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null
+  },
+  {
+   "image": "032.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.371,
+   "iou": null
+  },
+  {
+   "image": "059.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.411,
+   "iou": null
+  },
+  {
+   "image": "071.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.458,
+   "iou": null
+  },
+  {
+   "image": "217.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.883,
+   "iou": null
+  },
+  {
+   "image": "185.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.657,
+   "iou": null
+  },
+  {
+   "image": "019.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.488,
+   "iou": null
+  },
+  {
+   "image": "106.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.79,
+   "iou": null
+  },
+  {
+   "image": "060.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null
+  },
+  {
+   "image": "069.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.542,
+   "iou": null
+  },
+  {
+   "image": "109.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.498,
+   "iou": null
+  },
+  {
+   "image": "170.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.466,
+   "iou": null
+  },
+  {
+   "image": "006.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.827,
+   "iou": null
+  },
+  {
+   "image": "039.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.289,
+   "iou": null
+  },
+  {
+   "image": "187.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.528,
+   "iou": null
+  },
+  {
+   "image": "095.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null
+  },
+  {
+   "image": "001.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null
+  },
+  {
+   "image": "043.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.844,
+   "iou": null
+  },
+  {
+   "image": "203.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.468,
+   "iou": null
+  },
+  {
+   "image": "051.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.715,
+   "iou": null
+  },
+  {
+   "image": "046.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null
+  },
+  {
+   "image": "013.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.732,
+   "iou": null
+  },
+  {
+   "image": "142.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null
+  },
+  {
+   "image": "116.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.764,
+   "iou": null
+  },
+  {
+   "image": "168.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.355,
+   "iou": null
+  },
+  {
+   "image": "179.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.568,
+   "iou": null
+  },
+  {
+   "image": "097.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null
+  },
+  {
+   "image": "004.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null
+  },
+  {
+   "image": "094.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.583,
+   "iou": null
+  },
+  {
+   "image": "219.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null
+  },
+  {
+   "image": "011.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.699,
+   "iou": null
+  },
+  {
+   "image": "050.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null
+  },
+  {
+   "image": "076.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.333,
+   "iou": null
+  },
+  {
+   "image": "212.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.598,
+   "iou": null
+  },
+  {
+   "image": "099.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.672,
+   "iou": null
+  },
+  {
+   "image": "183.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.428,
+   "iou": null
+  },
+  {
+   "image": "181.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.536,
+   "iou": null
+  },
+  {
+   "image": "159.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.768,
+   "iou": null
+  },
+  {
+   "image": "199.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.379,
+   "iou": null
+  },
+  {
+   "image": "068.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.69,
+   "iou": null
+  },
+  {
+   "image": "196.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.288,
+   "iou": null
+  },
+  {
+   "image": "147.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.287,
+   "iou": null
+  },
+  {
+   "image": "005.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.54,
+   "iou": null
+  },
+  {
+   "image": "092.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.552,
+   "iou": null
+  },
+  {
+   "image": "200.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null
+  },
+  {
+   "image": "012.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.777,
+   "iou": null
+  },
+  {
+   "image": "007.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.311,
+   "iou": null
+  },
+  {
+   "image": "054.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.355,
+   "iou": null
+  },
+  {
+   "image": "128.png",
+   "has_scratch": false,
+   "rejected": true,
+   "best_conf": 0.289,
+   "iou": null
+  }
+ ],
+ "all_train_good": {
+  "scratch_images": 0,
+  "good_images": 220,
+  "tp": 0,
+  "fn": 0,
+  "fp": 162,
+  "tn": 58,
+  "recall": null,
+  "false_alarm": 0.736,
+  "precision": 0.0,
+  "mask_iou": null
+ }
+}

@@ -1,0 +1,2163 @@
+{
+ "total": {
+  "scratch_images": 10,
+  "good_images": 250,
+  "tp": 10,
+  "fn": 0,
+  "fp": 0,
+  "tn": 250,
+  "recall": 1.0,
+  "false_alarm": 0.0,
+  "precision": 1.0,
+  "mask_iou": 0.682
+ },
+ "per_fold": [
+  {
+   "scratch_images": 2,
+   "good_images": 50,
+   "tp": 2,
+   "fn": 0,
+   "fp": 0,
+   "tn": 50,
+   "recall": 1.0,
+   "false_alarm": 0.0,
+   "precision": 1.0,
+   "mask_iou": 0.74
+  },
+  {
+   "scratch_images": 2,
+   "good_images": 50,
+   "tp": 2,
+   "fn": 0,
+   "fp": 0,
+   "tn": 50,
+   "recall": 1.0,
+   "false_alarm": 0.0,
+   "precision": 1.0,
+   "mask_iou": 0.741
+  },
+  {
+   "scratch_images": 2,
+   "good_images": 50,
+   "tp": 2,
+   "fn": 0,
+   "fp": 0,
+   "tn": 50,
+   "recall": 1.0,
+   "false_alarm": 0.0,
+   "precision": 1.0,
+   "mask_iou": 0.509
+  },
+  {
+   "scratch_images": 2,
+   "good_images": 50,
+   "tp": 2,
+   "fn": 0,
+   "fp": 0,
+   "tn": 50,
+   "recall": 1.0,
+   "false_alarm": 0.0,
+   "precision": 1.0,
+   "mask_iou": 0.633
+  },
+  {
+   "scratch_images": 2,
+   "good_images": 50,
+   "tp": 2,
+   "fn": 0,
+   "fp": 0,
+   "tn": 50,
+   "recall": 1.0,
+   "false_alarm": 0.0,
+   "precision": 1.0,
+   "mask_iou": 0.786
+  }
+ ],
+ "images": [
+  {
+   "image": "scratch_018.png",
+   "has_scratch": true,
+   "rejected": true,
+   "best_conf": 0.892,
+   "iou": 0.884,
+   "fold": 0
+  },
+  {
+   "image": "scratch_020.png",
+   "has_scratch": true,
+   "rejected": true,
+   "best_conf": 0.642,
+   "iou": 0.597,
+   "fold": 0
+  },
+  {
+   "image": "067.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "029.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "032.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "059.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "071.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "217.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "185.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "019.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "106.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "060.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "069.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "109.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "170.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "006.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "039.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "187.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "095.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "001.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "043.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "203.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "051.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "046.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "013.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "142.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "116.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "168.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "179.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "097.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "004.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "094.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "219.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "011.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "050.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "076.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "212.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "099.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "183.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "181.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "159.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "199.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "068.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "196.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "147.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "005.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "092.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "200.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "012.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "007.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "054.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "128.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 0
+  },
+  {
+   "image": "scratch_002.png",
+   "has_scratch": true,
+   "rejected": true,
+   "best_conf": 0.783,
+   "iou": 0.876,
+   "fold": 1
+  },
+  {
+   "image": "scratch_011.png",
+   "has_scratch": true,
+   "rejected": true,
+   "best_conf": 0.886,
+   "iou": 0.606,
+   "fold": 1
+  },
+  {
+   "image": "067.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "029.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "032.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "059.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "071.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "217.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "185.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "019.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "106.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "060.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "069.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "109.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "170.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "006.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "039.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "187.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "095.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "001.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "043.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "203.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "051.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "046.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "013.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "142.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "116.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "168.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "179.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "097.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "004.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "094.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "219.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "011.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "050.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "076.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "212.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "099.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "183.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "181.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "159.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "199.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "068.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "196.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "147.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "005.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "092.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "200.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "012.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "007.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "054.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "128.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 1
+  },
+  {
+   "image": "scratch_006.png",
+   "has_scratch": true,
+   "rejected": true,
+   "best_conf": 0.83,
+   "iou": 0.318,
+   "fold": 2
+  },
+  {
+   "image": "scratch_010.png",
+   "has_scratch": true,
+   "rejected": true,
+   "best_conf": 0.718,
+   "iou": 0.701,
+   "fold": 2
+  },
+  {
+   "image": "067.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "029.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "032.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "059.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "071.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "217.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "185.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "019.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "106.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "060.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "069.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "109.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "170.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "006.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "039.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "187.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "095.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "001.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "043.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "203.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "051.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "046.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "013.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "142.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "116.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "168.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "179.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "097.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "004.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "094.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "219.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "011.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "050.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "076.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "212.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "099.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "183.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "181.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "159.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "199.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "068.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "196.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "147.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "005.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "092.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "200.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "012.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "007.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "054.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "128.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 2
+  },
+  {
+   "image": "scratch_004.png",
+   "has_scratch": true,
+   "rejected": true,
+   "best_conf": 0.811,
+   "iou": 0.553,
+   "fold": 3
+  },
+  {
+   "image": "scratch_000.png",
+   "has_scratch": true,
+   "rejected": true,
+   "best_conf": 0.72,
+   "iou": 0.713,
+   "fold": 3
+  },
+  {
+   "image": "067.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "029.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "032.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "059.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "071.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "217.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "185.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "019.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "106.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "060.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "069.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "109.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "170.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "006.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "039.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "187.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "095.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "001.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "043.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "203.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "051.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "046.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "013.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "142.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "116.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "168.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "179.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "097.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "004.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "094.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "219.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "011.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "050.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "076.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "212.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "099.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "183.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "181.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "159.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "199.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "068.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "196.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "147.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "005.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "092.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "200.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "012.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "007.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "054.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "128.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 3
+  },
+  {
+   "image": "scratch_021.png",
+   "has_scratch": true,
+   "rejected": true,
+   "best_conf": 0.899,
+   "iou": 0.724,
+   "fold": 4
+  },
+  {
+   "image": "scratch_014.png",
+   "has_scratch": true,
+   "rejected": true,
+   "best_conf": 0.829,
+   "iou": 0.849,
+   "fold": 4
+  },
+  {
+   "image": "067.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "029.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "032.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "059.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "071.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "217.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "185.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "019.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "106.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "060.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "069.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "109.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "170.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "006.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "039.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "187.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "095.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "001.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "043.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "203.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "051.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "046.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "013.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "142.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "116.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "168.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "179.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "097.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "004.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "094.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "219.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "011.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "050.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "076.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "212.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "099.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "183.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "181.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "159.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "199.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "068.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "196.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "147.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "005.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "092.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "200.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "012.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "007.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "054.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  },
+  {
+   "image": "128.png",
+   "has_scratch": false,
+   "rejected": false,
+   "best_conf": 0.0,
+   "iou": null,
+   "fold": 4
+  }
+ ],
+ "epochs": 30,
+ "weights": "last.pt",
+ "init": "output/models/synth_v2_best.pt",
+ "lr0": 0.001,
+ "n_synth": 300
+}

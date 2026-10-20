@@ -32,9 +32,12 @@ for folder in args.folders:
     for line in (folder / "meta.jsonl").read_text().splitlines():
         m = json.loads(line)
         split = "val" if m["index"] % VAL_EVERY == 0 else "train"
-        cols = ["dataset_version", "path", "seed", "idx", "split", "n_defects"] + IMAGE_PARAMS
-        values = [m["dataset_version"], str(folder / m["file"]), m["seed"], m["index"],
-                  split, m["n_defects"]] + [m[k] for k in IMAGE_PARAMS]
+        cols = (["dataset_version", "path", "seed", "idx", "split", "n_defects"] + IMAGE_PARAMS
+                + ["params_json"])
+        params = {k: v for k, v in m.items() if k != "defects"}
+        values = ([m["dataset_version"], str(folder / m["file"]), m["seed"], m["index"],
+                   split, m["n_defects"]] + [m.get(k) for k in IMAGE_PARAMS]   # NULL if absent
+                  + [json.dumps(params)])
         cur = con.execute(f"INSERT INTO images ({', '.join(cols)}) "
                           f"VALUES ({', '.join('?' * len(cols))})", values)
         image_id = cur.lastrowid

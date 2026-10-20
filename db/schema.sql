@@ -15,6 +15,9 @@ CREATE TABLE images (
     roughness_min     REAL, roughness_max REAL, grain_strength REAL,
     speckle_amount    REAL, speckle_dark REAL, bg_shift INTEGER,
     scratch_darken    REAL, scratch_roughness REAL,
+    -- every parameter of the image as JSON (versions randomize different ones;
+    -- columns above are NULL when a version does not have them)
+    params_json       TEXT,
     UNIQUE (dataset_version, idx)
 );
 

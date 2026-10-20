@@ -502,3 +502,109 @@ Compared 350 px close-ups of real vs render (`output/closeup_pair.png`).
   - Ramp stops calibrated with `output/band_stats.py` (sRGB inside band masks): before
     dark half 91-96 / light half 118-121; after dark 75-79 / light 97-101 (targets
     70-85 / 85-105).
+
+### Planned: robustness test (after the synth_v2 model is trained)
+- Goal: measure where the model breaks outside its training distribution (it saw camera
+  tilt 0-3°, zinc-colored nuts, scratches only).
+- Plan: render small out-of-distribution sets with `render/generate.py` by widening
+  one range at a time (e.g. camera tilt 10° / 20° / 30°; nut color yellow / black-oxide;
+  stronger/weaker light), ~100 images each, same seed so scratches are identical, and
+  plot recall / false alarms against the shifted parameter.
+- Story: the model works inside the factory camera's measured conditions; outside, the
+  fix is cheap with synthetic data (change a range, re-render, labels stay automatic).
+
+## 2026-10-19 (synth_v2 dataset ready)
+
+### 22. synth_v2 render + pipeline
+- 5,000 images rendered with the frozen v2 code (tag `synth_v2`, commit 7a70ff0), no
+  errors. The Mac slept on battery overnight (lid closed): ~17:46-00:35 almost no
+  progress; at normal speed ~2.3 s/image. caffeinate does not stop lid-close sleep.
+- `tools/build_db.py` made version-tolerant: v1-only columns are NULL for v2, and every
+  image's full parameter set is stored in `params_json`. DB: `db/meta_v2.sqlite`
+  (5,000 images, 4,600 scratches). Stats: `reports/data_stats_v2.md` (34.5% defect-free,
+  no empty/tiny masks).
+- YOLO dataset `data/yolo/synth_v2` (4,500 train / 500 val), round-trip IoU val mean
+  0.988 (min 0.903). Zip 2.1 GB for Colab.
+- Colab notebook parameterized (`DATASET` at the top), MLflow file-store fix inside,
+  resume cell added.
+
+## 2026-10-20 (synth_v2 model on real images)
+
+### 23. synth_v2 vs synth_v1 vs real-only
+- YOLOv8n-seg trained on synth_v2 in Colab, full 60 epochs (same settings as v1).
+  Synthetic val mask mAP50 0.900 (v1: 0.95; v2 images are harder). Weights
+  `output/models/synth_v2_best.pt`, curve `reports/train/synth_v2_results.csv`,
+  eval `reports/synth_v2_dev_eval.json`.
+- Dev set (10 seen_pool scratches + 50 train/good), conf 0.25:
+
+  | model | scratches found | false alarms (50 good) | mean mask IoU on scratches |
+  |---|---|---|---|
+  | real only (5-fold CV) | 1/10 | 0/50 | 0.06 |
+  | synth_v1 | 10/10 (luck, IoU ≈ 0) | 49/50 | 0.09 |
+  | synth_v2 | 10/10 | 39/50 | 0.53 |
+
+  The real scratches are now actually found and outlined (IoU 0.22-0.87, confidences
+  0.67-0.88); v1 marked random textured areas instead.
+- False alarms on all 220 train/good: 162 (74%) at conf 0.25; 42 (19%) at 0.70 with 9/10
+  scratches still found; 16 (7%) at 0.80 with 5/10. Unlike v1, a threshold now helps
+  (scratches score higher than most false alarms), but not enough.
+- Diagnosis: at conf ≥ 0.5, the median false alarm lies 100% in the outer ring
+  (r > 0.40 D), 81% of them almost entirely: thin bright arcs along the nut's outer
+  edge / short prong edges (`output/synth_v2_on_real.png`). The real rim looks unlike
+  our synthetic rim, so the model treats it as a defect. Next realism fix should target
+  the rim/edges (data-driven, not by eye), not the flange texture.
+
+### 24. Few-shot fine-tuning (5-fold CV, same folds as the real-only baseline)
+- `train/real_only_cv.py` → `train/fewshot_cv.py` (git mv) with `--init`, `--lr0`,
+  `--synth/--n-synth` (replay), `--name`. Folds, real train images (8 scratch + 40 good)
+  and test images (2 held-out scratches + 50 good) identical for every variant;
+  evaluated with last.pt; hyperparameters fixed before running (30 epochs, AdamW,
+  lr0 0.001), nothing tuned on the folds.
+- Results (`reports/cv_*.json`, conf 0.25):
+
+  | variant | init | train data | found | false alarms | mean IoU |
+  |---|---|---|---|---|---|
+  | real only | COCO | 8 real + 40 good | 1/10 | 0/250 | 0.06 |
+  | synthetic only | synth_v2 model, no fine-tune | 4,500 synthetic | 10/10 | 39/50 | 0.53 |
+  | A: fine-tune | synth_v2 | 8 real + 40 good | 9/10 | 0/250 | 0.58 |
+  | B: fine-tune + replay | synth_v2 | 8 real + 40 good + 300 synth_v2 | 10/10 | 0/250 | 0.68 |
+
+  (false alarms: the same 50 good images, once per fold model → 250 checks.)
+- Main finding: the same 8 real images give 1/10 from COCO but 9-10/10 with no false
+  alarms when the model is first trained on synthetic data. Fine-tuning on real good
+  nuts removed the rim false alarms of the synthetic-only model. Replay (mixing 300
+  synthetic images) avoids forgetting: all 10 found and better masks (IoU 0.58 → 0.68).
+- Caveat: 10 scratches and 50 distinct good images; 1 scratch = 10% recall. The
+  locked test (13 scratch + 22 good) gives the final, independent number.
+
+### 25. Cost-based threshold (chosen before the locked test)
+- `tools/cost_threshold.py`: out-of-fold scores of the 5 CV models of variant B
+  (v2 + fine-tune + replay): each model scores its 2 held-out real scratches and the
+  180 train/good images never used for training (900 good checks). Score = highest
+  scratch confidence in the image. Expected cost per part =
+  p·C_miss·miss_rate + (1−p)·C_fa·false_alarm_rate, with stated assumptions: defect rate
+  p = 5%, C_miss = 5x / 20x / 50x C_fa. Rule fixed in advance: middle of the cheapest
+  threshold range.
+- Out-of-fold scratch scores 0.64-0.90; good scores max 0.53 (99th percentile 0.10):
+  perfectly separated on the dev data, zero cost for t in 0.54-0.64 in all scenarios.
+  Chosen t = 0.59 (`reports/threshold_v2_ft_replay.json/.png`).
+- Caveat: with only 10 scratches the cost ratio cannot change the choice here (no errors
+  to trade off); the margin to the weakest scratch (0.64) is small.
+
+### 26. Final model
+- `train/fewshot_cv.py --final`: same recipe as variant B (synth_v2 init, 30 epochs,
+  AdamW lr0 0.001, 300 synthetic replay) but trained once on ALL 10 real scratches +
+  40 good; saved as `output/models/final_v2_ft_replay.pt`. Next: one evaluation on
+  the locked test at t = 0.59.
+
+### 27. FINAL: locked test (one-time evaluation)
+- `tools/final_eval.py` (needs `--i-confirm-final-evaluation`), model
+  `output/models/final_v2_ft_replay.pt`, threshold 0.59, both fixed beforehand.
+  First and only look at `splits/locked_test.txt` (13 scratch + 22 good).
+- Result (`reports/final_locked_test.json`, `reports/final_locked_test.png`):
+  **12/13 scratches found (recall 92.3%), 0/22 false alarms (precision 100%),
+  mean mask IoU 0.63.**
+- Error analysis (after the fact, no changes made): the missed scratch_001 scores 0.565,
+  just below the threshold (inside the 0.54-0.64 zero-cost range on dev). Some multi-part
+  scratches are only partly outlined (e.g. scratch_007: 1 of 3 regions).
+- Reported as is. Threshold and model stay unchanged; the locked test is now "seen".

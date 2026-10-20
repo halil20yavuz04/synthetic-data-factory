@@ -1,0 +1,59 @@
+{
+ "name": "v2_ft_replay",
+ "p_defect": 0.05,
+ "scratch_scores": [
+  0.892,
+  0.642,
+  0.783,
+  0.886,
+  0.83,
+  0.718,
+  0.811,
+  0.72,
+  0.899,
+  0.829
+ ],
+ "n_good_checks": 900,
+ "scenarios": {
+  "miss = 5x false alarm": {
+   "cost_ratio": 5,
+   "threshold": 0.59,
+   "miss_rate": 0.0,
+   "false_alarm_rate": 0.0,
+   "cheapest_range": [
+    0.54,
+    0.64
+   ]
+  },
+  "miss = 20x": {
+   "cost_ratio": 20,
+   "threshold": 0.59,
+   "miss_rate": 0.0,
+   "false_alarm_rate": 0.0,
+   "cheapest_range": [
+    0.54,
+    0.64
+   ]
+  },
+  "miss = 50x": {
+   "cost_ratio": 50,
+   "threshold": 0.59,
+   "miss_rate": 0.0,
+   "false_alarm_rate": 0.0,
+   "cheapest_range": [
+    0.54,
+    0.64
+   ]
+  }
+ },
+ "chosen": {
+  "cost_ratio": 20,
+  "threshold": 0.59,
+  "miss_rate": 0.0,
+  "false_alarm_rate": 0.0,
+  "cheapest_range": [
+   0.54,
+   0.64
+  ]
+ }
+}
